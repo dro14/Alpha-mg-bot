@@ -167,6 +167,6 @@ admin.site.register(Truck, TruckAdmin)
 admin.site.register(Cargo, CargoAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
 
-admin.site.site_header = "Администрирование"
-admin.site.site_title = "Админ панель"
-admin.site.index_title = "Alpha Mining"
+admin.site.site_header = "Alpha Mining"
+admin.site.site_title = "Администрирование"
+admin.site.index_title = "Админ панель"
