@@ -23,7 +23,7 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=32,
         verbose_name="Telegram-username",
-        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки, например: my_username",
+        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
         unique=True,
         error_messages={
@@ -73,7 +73,7 @@ class CustomUser(models.Model):
     username = models.CharField(
         max_length=32,
         verbose_name="Telegram-username",
-        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки, например: my_username",
+        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
         unique=True,
         error_messages={
@@ -105,12 +105,16 @@ class CustomUser(models.Model):
         verbose_name="адрес отправки",
         on_delete=models.PROTECT,
         related_name="sending_users",
+        blank=True,
+        null=True,
     )
     receiving_address = models.ForeignKey(
         Address,
         verbose_name="адрес доставки",
         on_delete=models.PROTECT,
         related_name="receiving_users",
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
@@ -125,7 +129,7 @@ class CustomUser(models.Model):
 class Truck(models.Model):
     number = models.CharField(
         max_length=MAX_LENGTH,
-        verbose_name="государственный номер",
+        verbose_name="самосвал",
         unique=True,
         error_messages={
             "unique": "Такой самосвал уже cуществует",
