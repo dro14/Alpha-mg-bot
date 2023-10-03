@@ -14,6 +14,8 @@ class UserAdmin(BaseUserAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
+    list_filter = ()
+
 
 class AddressAdmin(admin.ModelAdmin):
     def senders(self, obj):

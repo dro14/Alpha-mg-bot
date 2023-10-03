@@ -22,8 +22,8 @@ number_validator = ASCIIUsernameValidator(
 class User(AbstractUser):
     username = models.CharField(
         max_length=32,
-        verbose_name=_("username"),
-        help_text="Введите имя пользователя в Телеграме без собачки, например: my_username",
+        verbose_name="Telegram-username",
+        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки, например: my_username",
         validators=[username_validator],
         unique=True,
         error_messages={
@@ -33,7 +33,7 @@ class User(AbstractUser):
     email = models.EmailField(
         verbose_name=_("email address"),
         unique=True,
-        help_text="Введите адрес электронной почты, например: someone@example.com",
+        help_text="Обязательное поле. Введите адрес электронной почты, например: someone@example.com",
         error_messages={
             "unique": "Пользователь с таким адресом электронной почты уже существует",
         },
@@ -72,8 +72,8 @@ class Address(models.Model):
 class CustomUser(models.Model):
     username = models.CharField(
         max_length=32,
-        verbose_name=_("username"),
-        help_text="Введите имя пользователя в Телеграме без собачки, например: my_username",
+        verbose_name="Telegram-username",
+        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки, например: my_username",
         validators=[username_validator],
         unique=True,
         error_messages={
@@ -83,7 +83,7 @@ class CustomUser(models.Model):
     phone_number = models.CharField(
         max_length=MAX_LENGTH,
         verbose_name="номер телефона",
-        help_text="Введите номер телефона без знака плюс (+), например: 998901234567",
+        help_text="Обязательное поле. Введите номер телефона без знака плюс (+), например: 998901234567",
         validators=[number_validator],
         unique=True,
         error_messages={
