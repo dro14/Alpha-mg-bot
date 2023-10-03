@@ -193,7 +193,7 @@ class Delivery(models.Model):
     receiver = char_field("получатель")
 
     def __str__(self):
-        return self.sent_at
+        return str(self.sent_at)
 
     class Meta:
         verbose_name = "поставка"
