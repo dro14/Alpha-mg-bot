@@ -134,7 +134,7 @@ class DeliveryAdmin(admin.ModelAdmin):
             return "поставка завершена"
 
     def has_add_permission(self, request):
-        return True
+        return False
 
     def has_change_permission(self, request, obj=None):
         return False
@@ -143,7 +143,6 @@ class DeliveryAdmin(admin.ModelAdmin):
         return obj and obj.status == "Отправлен"
 
     list_display = (
-        "id",
         "status",
         "sent_at",
         "received_at",
