@@ -25,6 +25,10 @@ urlpatterns = [
         admin.site.urls,
     ),
     path(
+        "",
+        views.redirect_view,
+    ),
+    path(
         "accounts/login/",
         views.redirect_view,
     ),
