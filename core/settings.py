@@ -33,6 +33,18 @@ ALLOWED_HOSTS = [
 ]
 
 
+# Pyrogram BOT Settings
+PYROGRAM_BOT = {
+    "BOT_NAME": "AlphaM Bot",
+    "BOT_TOKEN": os.environ["BOT_TOKEN"],
+    "API_ID": os.environ["API_ID"],
+    "API_HASH": os.environ["API_HASH"],
+    "ADMINS": (1331278972,),
+    "NOTIFY_STARTUP_ADMINS": True,
+    "NOTIFY_SHUTDOWN_ADMINS": True,
+}
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +55,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "alpha",
+    "bot.apps.BotConfig",
 ]
 
 MIDDLEWARE = [
@@ -137,3 +150,62 @@ EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = "Сброс пароля <noreply@gmail.com>"
+
+# https://github.com/django/django/blob/main/django/utils/log.py
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "medium": {
+            "format": "[{module}]: {levelname} {asctime} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "console-medium": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "medium",
+        },
+        "console-verbose": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file-medium": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "/".join([f"{BASE_DIR.as_posix()}", "pyrogram_bot.log"]),
+            "formatter": "medium",
+        },
+        "file-verbose": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "/".join([f"{BASE_DIR.as_posix()}", "pyrogram_bot.log"]),
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "root": {
+            "handlers": ["console-medium", "file-medium"],
+            "level": "DEBUG",
+        },
+        "pyrogram.session.session": {
+            "handlers": ["console-medium", "file-medium"],
+            "level": "WARNING",
+        },
+    },
+}
