@@ -1,5 +1,7 @@
-import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+import time
+
+time.sleep(5)
+
 from alpha.models import CustomUser
 from pyrogram import Client, filters
 import os
