@@ -27,11 +27,11 @@ def cmd_postavka(client, message):
 
 
 @Client.on_callback_query(filters.regex(cargo_types))
-def transport_type(client, message):
+def transport_type(client, query):
     text = "Выберите тип транспорта:"
     transports = ["Самосвал", "Вагон"]
     keyboard = []
     for t in transports:
         button = InlineKeyboardButton(t, callback_data=t)
         keyboard.append([button])
-    message.reply(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
