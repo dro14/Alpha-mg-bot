@@ -31,13 +31,6 @@ def cmd_admin(client: Client, message: Message, **kwargs):
     message.reply(text=text)
 
 
-@Client.on_message(filters.command(["start"]) & filters.private)
-def cmd_start(client: Client, message: Message, **kwargs):
-    """/start command"""
-    logger.debug("basic command: cmd_start")
-    message.reply("Echo: /start command")
-
-
 @Client.on_message(filters.command(["help"]) & filters.private)
 def cmd_help(client: Client, message: Message, **kwargs):
     """/help command"""

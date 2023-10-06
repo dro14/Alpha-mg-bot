@@ -44,7 +44,7 @@ class TelegramUserAdmin(admin.ModelAdmin):
                 ) as app:
                     await app.send_message(
                         chat_id=user.user_id,
-                        text=f"Hello, {user.first_name}.\n This is a test message.",
+                        text=f"Hello, {user.first_name}.\nThis is a test message.",
                     )
             else:
                 continue

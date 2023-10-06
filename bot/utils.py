@@ -16,7 +16,7 @@ class RunningBot:
                 data = json.load(json_file)
             return data
         except BaseException as e:
-            # print(e.args)
+            print(e.args)
             return None
 
     def save_data(self, data: dict):
