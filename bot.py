@@ -12,3 +12,7 @@ app = Client(
 @app.on_message(filters.incoming & filters.private & filters.text)
 def handle_text(client, message):
     message.reply_text(message.text)
+
+
+if __name__ == "__main__":
+    app.run()
