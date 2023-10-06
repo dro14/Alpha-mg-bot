@@ -2,6 +2,8 @@ from alpha.models import CustomUser
 from pyrogram import Client, filters
 import os
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+
 app = Client(
     "my_account",
     api_id=os.environ["API_ID"],
