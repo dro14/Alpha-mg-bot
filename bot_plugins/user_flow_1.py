@@ -1,7 +1,7 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram import Client, filters
 from alpha.models import Cargo, Truck
-from redis_client import redis
+from .redis_client import redis
 
 
 @Client.on_message(filters.private & filters.command("start"))
