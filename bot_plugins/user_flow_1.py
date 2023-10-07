@@ -22,7 +22,7 @@ def flow1step1(client, message):
     redis.set("cargo", cargo)
 
 
-@Client.on_callback_query(filters.private & filters.regex(redis.get("cargo")))
+@Client.on_callback_query(filters.private & filters.regex(str(redis.get("cargo"))))
 def flow1step2(client, query):
     text = "Выберите тип транспорта:"
     transport_types = ["Самосвал", "Вагон"]
@@ -65,7 +65,7 @@ def flow1step3(client, query):
     redis.set(f"user:{query.from_user.id}", user_data)
 
 
-@Client.on_callback_query(filters.private & filters.regex(redis.get("trucks")))
+@Client.on_callback_query(filters.private & filters.regex(str(redis.get("trucks"))))
 def flow1step4(client, query):
     user_data = redis.get(f"user:{query.from_user.id}")
     if user_data["transport_number"] != "?":
