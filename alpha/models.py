@@ -104,18 +104,18 @@ class CustomUser(models.Model):
         verbose_name="тип пользователя",
         choices=types,
     )
-    sending_address = models.ForeignKey(
+    sending_address = models.ManyToManyField(
         Address,
         verbose_name="адрес отправки",
-        on_delete=models.PROTECT,
+        # on_delete=models.PROTECT,
         related_name="sending_users",
         blank=True,
         null=True,
     )
-    receiving_address = models.ForeignKey(
+    receiving_address = models.ManyToManyField(
         Address,
         verbose_name="адрес доставки",
-        on_delete=models.PROTECT,
+        # on_delete=models.PROTECT,
         related_name="receiving_users",
         blank=True,
         null=True,

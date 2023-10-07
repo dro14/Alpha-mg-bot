@@ -37,11 +37,22 @@ class AddressAdmin(admin.ModelAdmin):
         return format_html(result[:-3], *items)
 
     def change_delete(self, obj):
-        return format_html(
-            '<a class="changelink" href="/admin/alpha/address/{}/change/">Изменить</a> '
-            '<a class="deletelink" href="/admin/alpha/address/{}/delete/">Удалить</a>',
-            obj.id,
-            obj.id,
+        if obj.sending_users.exists() or obj.receiving_users.exists():
+            return format_html(
+                '<a class="changelink" href="/admin/alpha/address/{}/change/">Изменить</a>',
+                obj.id,
+            )
+        else:
+            return format_html(
+                '<a class="changelink" href="/admin/alpha/address/{}/change/">Изменить</a> '
+                '<a class="deletelink" href="/admin/alpha/address/{}/delete/">Удалить</a>',
+                obj.id,
+                obj.id,
+            )
+
+    def has_delete_permission(self, request, obj=None):
+        return (
+            obj and not obj.sending_users.exists() and not obj.receiving_users.exists()
         )
 
     list_display = (
@@ -82,6 +93,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         "type",
         "change_delete",
     )
+    filter_vertical = ("sending_address", "receiving_address")
     search_fields = ("username", "phone_number")
     change_delete.short_description = "действия"
 
