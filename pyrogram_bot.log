@@ -1,0 +1,18 @@
+[aes]: INFO 2023-10-07 16:00:13,384 Using TgCrypto
+[selector_events]: DEBUG 2023-10-07 16:00:13,506 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-07 16:00:13,510 Starting BotConfig ready()
+[aes]: INFO 2023-10-07 16:04:05,977 Using TgCrypto
+[selector_events]: DEBUG 2023-10-07 16:04:06,023 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-07 16:04:06,026 Starting BotConfig ready()
+[aes]: INFO 2023-10-07 16:05:25,176 Using TgCrypto
+[selector_events]: DEBUG 2023-10-07 16:05:25,215 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-07 16:05:25,218 Starting BotConfig ready()
+[aes]: INFO 2023-10-07 16:05:34,142 Using TgCrypto
+[selector_events]: DEBUG 2023-10-07 16:05:34,184 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-07 16:05:34,187 Starting BotConfig ready()
+[aes]: INFO 2023-10-07 16:05:56,639 Using TgCrypto
+[selector_events]: DEBUG 2023-10-07 16:05:56,680 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-07 16:05:56,683 Starting BotConfig ready()
+[aes]: INFO 2023-10-07 16:06:11,983 Using TgCrypto
+[selector_events]: DEBUG 2023-10-07 16:06:12,033 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-07 16:06:12,036 Starting BotConfig ready()
