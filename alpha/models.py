@@ -41,6 +41,8 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ["email"]
 
+    objects = models.Manager()
+
     def __str__(self):
         return self.username
 
@@ -59,6 +61,8 @@ class Address(models.Model):
             "unique": "Такой адрес уже cуществует",
         },
     )
+
+    objects = models.Manager()
 
     def __str__(self):
         return self.address
@@ -117,6 +121,8 @@ class CustomUser(models.Model):
         null=True,
     )
 
+    objects = models.Manager()
+
     def __str__(self):
         return self.username
 
@@ -140,6 +146,8 @@ class Truck(models.Model):
         auto_now_add=True,
     )
 
+    objects = models.Manager()
+
     def __str__(self):
         return self.number
 
@@ -158,6 +166,8 @@ class Cargo(models.Model):
             "unique": "Такой тип груза уже cуществует",
         },
     )
+
+    objects = models.Manager()
 
     def __str__(self):
         return self.cargo_type
@@ -191,6 +201,8 @@ class Delivery(models.Model):
     receiving_address = char_field("адрес доставки")
     sender = char_field("отправитель")
     receiver = char_field("получатель")
+
+    objects = models.Manager()
 
     def __str__(self):
         return f"{self.transport_type}: {self.transport_number} | {self.cargo_type}: {self.weight} кг"
