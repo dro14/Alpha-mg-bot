@@ -18,8 +18,7 @@ def flow1step1(client, message):
         button = InlineKeyboardButton(c, callback_data=c)
         keyboard.append([button])
     message.reply(text, reply_markup=InlineKeyboardMarkup(keyboard))
-    cargo = "|".join(cargo_types)
-    set_str("cargo", cargo)
+    set_str("cargo", "|".join(cargo_types))
 
 
 @Client.on_callback_query(filters.regex(get_str("cargo")))
@@ -50,8 +49,7 @@ def flow1step3(client, query):
             button = InlineKeyboardButton(t, callback_data=t)
             keyboard.append([button])
         query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
-        trucks = "|".join(truck_numbers)
-        set_str("trucks", trucks)
+        set_str("trucks", "|".join(truck_numbers))
     elif query.data == "Вагон":
         text = "Введите номер вагона (только цифры):"
         query.edit_message_text(text)
@@ -94,3 +92,5 @@ def flow1step5(client, message):
         user_data["weight"] = message.text
         user_data["address"] = "?"
         set_dict(f"user:{message.from_user.id}", user_data)
+    else:
+        print("unknown message:", message.text)

@@ -14,7 +14,7 @@ username_validator = ASCIIUsernameValidator(
 )
 
 number_validator = ASCIIUsernameValidator(
-    regex=r"^[1-9][0-9]+$",
+    regex=r"^\d+$",
     message="Значение должно состоять только из цифр",
 )
 
@@ -32,8 +32,8 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name=_("email address"),
-        unique=True,
         help_text="Обязательное поле. Введите адрес электронной почты, например: someone@example.com",
+        unique=True,
         error_messages={
             "unique": "Пользователь с таким адресом электронной почты уже существует",
         },

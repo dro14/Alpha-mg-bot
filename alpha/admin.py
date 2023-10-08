@@ -1,6 +1,7 @@
 from .models import User, Address, CustomUser, Truck, Cargo, Delivery
 from django.contrib.auth.admin import Group, UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
+from .forms import CustomUserForm
 from django.contrib import admin
 
 
@@ -93,7 +94,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         "type",
         "change_delete",
     )
-    filter_vertical = ("sending_address", "receiving_address")
+    form = CustomUserForm
     search_fields = ("username", "phone_number")
     change_delete.short_description = "действия"
 
