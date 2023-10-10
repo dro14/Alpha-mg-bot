@@ -1,7 +1,5 @@
-import json
 import logging
 from time import sleep
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -14,7 +12,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from pyrogram import Client, idle
         from bot.apps import BotConfig
-        from bot.utils import RunningBot
 
         # Read Bot settings
         bot_settings = settings.PYROGRAM_BOT
@@ -45,15 +42,6 @@ class Command(BaseCommand):
                 )
                 sleep(0.1)
 
-        running_bot = RunningBot()
-        running_bot_data = {
-            "session_string": str(client.export_session_string()),
-            "about_bot": json.loads(str(about_bot)),
-        }
-
-        # Save data of this running bot to file
-        running_bot.save_data(running_bot_data)
-
         logger.info(f"Bot idle and Online")
         idle()
         logger.info(f"Stopping bot...")
@@ -66,6 +54,3 @@ class Command(BaseCommand):
                     text=f"🔴 Shutting down bot @{about_bot.username} - {about_bot.first_name}",
                 )
                 sleep(0.1)
-
-        # Delete running bot data
-        running_bot.delete_data()

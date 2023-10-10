@@ -1,7 +1,6 @@
 from .models import User, Address, CustomUser, Truck, Cargo, Delivery
 from django.contrib.auth.admin import Group, UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
-from .forms import CustomUserForm
 from django.contrib import admin
 
 
@@ -22,23 +21,25 @@ class AddressAdmin(admin.ModelAdmin):
     def senders(self, obj):
         items = []
         result = ""
-        for user in obj.sending_users.all():
-            items.append(user.id)
-            items.append(user.username)
-            result += '<a href="/admin/alpha/customuser/{}/change/">{}</a> | '
+        for user in obj.users.all():
+            if user.type in ["Отправитель", "Отправитель и Получатель"]:
+                items.append(user.id)
+                items.append(user.username)
+                result += '<a href="/admin/alpha/customuser/{}/change/">{}</a> | '
         return format_html(result[:-3], *items)
 
     def receivers(self, obj):
         items = []
         result = ""
-        for user in obj.receiving_users.all():
-            items.append(user.id)
-            items.append(user.username)
-            result += '<a href="/admin/alpha/customuser/{}/change/">{}</a> | '
+        for user in obj.users.all():
+            if user.type in ["Получатель", "Отправитель и Получатель"]:
+                items.append(user.id)
+                items.append(user.username)
+                result += '<a href="/admin/alpha/customuser/{}/change/">{}</a> | '
         return format_html(result[:-3], *items)
 
     def change_delete(self, obj):
-        if obj.sending_users.exists() or obj.receiving_users.exists():
+        if obj.users.exists():
             return format_html(
                 '<a class="changelink" href="/admin/alpha/address/{}/change/">Изменить</a>',
                 obj.id,
@@ -52,9 +53,7 @@ class AddressAdmin(admin.ModelAdmin):
             )
 
     def has_delete_permission(self, request, obj=None):
-        return (
-            obj and not obj.sending_users.exists() and not obj.receiving_users.exists()
-        )
+        return obj and not obj.users.exists()
 
     list_display = (
         "id",
@@ -92,9 +91,9 @@ class CustomUserAdmin(admin.ModelAdmin):
         "username",
         "phone_number",
         "type",
+        "address",
         "change_delete",
     )
-    form = CustomUserForm
     search_fields = ("username", "phone_number")
     change_delete.short_description = "действия"
 
@@ -182,5 +181,5 @@ admin.site.register(Cargo, CargoAdmin)
 admin.site.register(Delivery, DeliveryAdmin)
 
 admin.site.site_header = "Alpha Mining"
-admin.site.site_title = "Администрирование"
-admin.site.index_title = "Админ панель"
+admin.site.site_title = "Админ панель"
+admin.site.index_title = "Администрирование"

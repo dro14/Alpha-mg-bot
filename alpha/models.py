@@ -21,7 +21,7 @@ number_validator = ASCIIUsernameValidator(
 
 class User(AbstractUser):
     username = models.CharField(
-        max_length=32,
+        max_length=MAX_LENGTH,
         verbose_name="Telegram-username",
         help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
@@ -100,17 +100,13 @@ class CustomUser(models.Model):
         verbose_name="тип пользователя",
         choices=types,
     )
-    sending_address = models.ManyToManyField(
+    address = models.ForeignKey(
         Address,
-        verbose_name="адрес отправки",
-        related_name="sending_users",
+        verbose_name="адрес",
+        on_delete=models.PROTECT,
+        related_name="users",
         blank=True,
-    )
-    receiving_address = models.ManyToManyField(
-        Address,
-        verbose_name="адрес доставки",
-        related_name="receiving_users",
-        blank=True,
+        null=True,
     )
 
     def __str__(self):
@@ -186,7 +182,12 @@ class Delivery(models.Model):
     sending_address = char_field("адрес отправки")
     receiving_address = char_field("адрес доставки")
     sender = char_field("отправитель")
-    receiver = char_field("получатель")
+    receiver = models.CharField(
+        max_length=MAX_LENGTH,
+        verbose_name="получатель",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return f"{self.transport_type}: {self.transport_number} | {self.cargo_type}: {self.weight} кг"
