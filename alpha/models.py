@@ -10,7 +10,8 @@ MAX_LENGTH = 255
 username_validator = ASCIIUsernameValidator(
     regex=r"^[a-zA-Z0-9_]{5,32}$",
     message="Имя пользователя может содержать только заглавные (A-Z), \
-    строчные (a-z) латинские буквы, цифры (0-9) и/или знак подчеркивания (_)",
+    строчные (a-z) латинские буквы, цифры (0-9) и/или знак подчеркивания (_). \
+    Длина имени пользователя должна быть от 5 до 32 символов.",
 )
 
 number_validator = ASCIIUsernameValidator(
@@ -23,16 +24,38 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=MAX_LENGTH,
         verbose_name=_("username"),
-        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
+        help_text="Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
+        blank=True,
+        null=True,
         unique=True,
         error_messages={
             "unique": "Пользователь с таким именем уже существует",
         },
     )
+    phone_number = models.CharField(
+        max_length=MAX_LENGTH,
+        verbose_name="номер телефона",
+        help_text="Введите полный номер телефона Телеграм аккаунта без знака плюс (+), например: 998901234567",
+        validators=[number_validator],
+        blank=True,
+        null=True,
+        unique=True,
+        error_messages={
+            "unique": "Пользователь с таким номером телефона уже существует",
+        },
+    )
     email = models.EmailField(
         verbose_name=_("email address"),
-        help_text="Обязательное поле. Он понадобится для восстановления пароля",
+        help_text="Обязательное поле. Адрес электронной почты понадобится для восстановления пароля",
+    )
+    user_id = models.BigIntegerField(
+        verbose_name="Телеграм ID",
+        null=True,
+        unique=True,
+        error_messages={
+            "unique": "Пользователь с таким Телеграм ID уже существует",
+        },
     )
     is_staff = models.BooleanField(
         _("staff status"),
@@ -74,8 +97,10 @@ class CustomUser(models.Model):
     username = models.CharField(
         max_length=MAX_LENGTH,
         verbose_name=_("username"),
-        help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
+        help_text="Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
+        blank=True,
+        null=True,
         unique=True,
         error_messages={
             "unique": "Пользователь с таким именем уже существует",
@@ -84,11 +109,21 @@ class CustomUser(models.Model):
     phone_number = models.CharField(
         max_length=MAX_LENGTH,
         verbose_name="номер телефона",
-        help_text="Обязательное поле. Введите номер телефона без знака плюс (+), например: 998901234567",
+        help_text="Введите полный номер телефона Телеграм аккаунта без знака плюс (+), например: 998901234567",
         validators=[number_validator],
+        blank=True,
+        null=True,
         unique=True,
         error_messages={
             "unique": "Пользователь с таким номером телефона уже существует",
+        },
+    )
+    user_id = models.BigIntegerField(
+        verbose_name="Телеграм ID",
+        null=True,
+        unique=True,
+        error_messages={
+            "unique": "Пользователь с таким Телеграм ID уже существует",
         },
     )
     types = (

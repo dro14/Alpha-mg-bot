@@ -16,7 +16,7 @@ class UserAdmin(DefaultUserAdmin):
         (
             None,
             {
-                "fields": ("username", "password", "email"),
+                "fields": ("username", "phone_number", "email", "password"),
             },
         ),
     )
@@ -25,7 +25,13 @@ class UserAdmin(DefaultUserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("username", "password1", "password2", "email"),
+                "fields": (
+                    "username",
+                    "phone_number",
+                    "email",
+                    "password1",
+                    "password2",
+                ),
             },
         ),
     )

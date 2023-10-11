@@ -5,7 +5,13 @@ from .models import CustomUser, Truck
 class CustomUserForm(ModelForm):
     class Meta:
         model = CustomUser
-        fields = "__all__"
+        fields = (
+            "username",
+            "phone_number",
+            "type",
+            "sender_address",
+            "receiver_address",
+        )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -34,6 +40,19 @@ class CustomUserForm(ModelForm):
             self.add_error(
                 "sender_address",
                 "У получателя адрес отправителя должен быть пустым",
+            )
+
+        username = cleaned_data.get("username")
+        phone_number = cleaned_data.get("phone_number")
+
+        if not username and not phone_number:
+            self.add_error(
+                "username",
+                "Укажите либо имя пользователя, либо номер телефона Телеграм аккаунта",
+            )
+            self.add_error(
+                "phone_number",
+                "Укажите либо имя пользователя, либо номер телефона Телеграм аккаунта",
             )
 
 

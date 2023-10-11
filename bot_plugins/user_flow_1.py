@@ -1,7 +1,22 @@
+from alpha.models import User, Address, CustomUser, Truck, Cargo, Delivery
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from alpha.models import Cargo, Truck, CustomUser, Delivery, Address
 from .redis_client import set_dict, get_dict
 from pyrogram import Client, filters
+from .utils import iterate_check
+
+
+@Client.on_message(filters.private)
+def verify(client, message):
+    users = CustomUser.objects.all()
+    if iterate_check(users, message):
+        return True
+
+    admins = User.objects.all()
+    if iterate_check(admins, message):
+        return True
+
+    message.reply("Вы не зарегистрированы в системе")
+    return False
 
 
 @Client.on_message(filters.private & filters.command("start"))
