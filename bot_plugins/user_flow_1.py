@@ -93,7 +93,7 @@ def handle_callback_query(client, query):
         case "option":
             user_data["option"] = query.data
             user_data["current"] = "end"
-            set_dict(f"username:@{query.from_user.username}", user_data)
+            set_dict(f"user:@{query.from_user.username}", user_data)
 
             if query.data == "Утвердить":
                 Delivery.objects.create(
