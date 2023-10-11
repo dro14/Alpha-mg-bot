@@ -2,18 +2,27 @@ from alpha.models import User, Address, CustomUser, Truck, Cargo, Delivery
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from .redis_client import set_dict, get_dict
 from pyrogram import Client, filters
-from .utils import iterate_check
 
 
 @Client.on_message(filters.private)
 def verify(client, message):
-    users = CustomUser.objects.all()
-    if iterate_check(users, message):
-        return True
-
-    admins = User.objects.all()
-    if iterate_check(admins, message):
-        return True
+    for model in [CustomUser, User]:
+        users = model.objects.all()
+        for user in users:
+            if message.from_user.username == user.username:
+                if not user.user_id:
+                    user.user_id = message.from_user.id
+                    if message.from_user.phone_number:
+                        user.phone_number = message.from_user.phone_number
+                    user.save()
+                return True
+            if message.from_user.phone_number == user.phone_number:
+                if not user.user_id:
+                    user.user_id = message.from_user.id
+                    if message.from_user.username:
+                        user.username = message.from_user.username
+                    user.save()
+                return True
 
     message.reply("Вы не зарегистрированы в системе")
     return False
