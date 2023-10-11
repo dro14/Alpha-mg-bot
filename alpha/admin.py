@@ -61,6 +61,9 @@ class UserAdmin(DefaultUserAdmin):
                 obj.id,
             )
 
+    def has_delete_permission(self, request, obj=None):
+        return obj and not obj.is_superuser
+
     list_display = (
         "id",
         "username",
