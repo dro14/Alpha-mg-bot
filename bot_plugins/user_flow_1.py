@@ -11,6 +11,7 @@ def verify(client, message):
         for user in users:
             if message.from_user.username == user.username:
                 if not user.user_id:
+                    user = model.objects.get(username=user.username)
                     user.user_id = message.from_user.id
                     if message.from_user.phone_number:
                         user.phone_number = message.from_user.phone_number
@@ -18,6 +19,7 @@ def verify(client, message):
                 return True
             if message.from_user.phone_number == user.phone_number:
                 if not user.user_id:
+                    user = model.objects.get(phone_number=user.phone_number)
                     user.user_id = message.from_user.id
                     if message.from_user.username:
                         user.username = message.from_user.username
