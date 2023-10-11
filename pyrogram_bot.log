@@ -1,0 +1,12 @@
+[aes]: INFO 2023-10-11 15:05:14,391 Using TgCrypto
+[selector_events]: DEBUG 2023-10-11 15:05:14,437 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-11 15:05:14,440 Starting BotConfig ready()
+[aes]: INFO 2023-10-11 15:06:26,059 Using TgCrypto
+[selector_events]: DEBUG 2023-10-11 15:06:26,102 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-11 15:06:26,104 Starting BotConfig ready()
+[aes]: INFO 2023-10-11 15:07:17,457 Using TgCrypto
+[selector_events]: DEBUG 2023-10-11 15:07:17,500 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-11 15:07:17,502 Starting BotConfig ready()
+[aes]: INFO 2023-10-11 15:08:19,148 Using TgCrypto
+[selector_events]: DEBUG 2023-10-11 15:08:19,194 Using selector: KqueueSelector
+[apps]: DEBUG 2023-10-11 15:08:19,196 Starting BotConfig ready()

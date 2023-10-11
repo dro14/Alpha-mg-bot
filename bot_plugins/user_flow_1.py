@@ -91,20 +91,19 @@ def flow1step5(client, message):
 
     elif user_data["current"] == "weight":
         user_data["weight"] = message.text
-        user_data["current"] = "receiving_address"
+        user_data["current"] = "receiver_address"
 
         user = CustomUser.objects.get(username=message.from_user.username)
-        sending_address = user.address.address
-        user_data["sending_address"] = sending_address
+        sender_address = user.sender_address.address
+        user_data["sender_address"] = sender_address
         set_dict(f"username:@{message.from_user.username}", user_data)
 
-        receiving_addresses = list(Address.objects.values_list("address", flat=True))
-        print(receiving_addresses, type(receiving_addresses))
-        receiving_addresses.remove(sending_address)
-        set_str("receiving_addresses", "|".join(receiving_addresses))
+        receiver_addresses = list(Address.objects.values_list("address", flat=True))
+        receiver_addresses.remove(sender_address)
+        set_str("receiver_addresses", "|".join(receiver_addresses))
 
         keyboard = []
-        for a in receiving_addresses:
+        for a in receiver_addresses:
             button = InlineKeyboardButton(a, callback_data=a)
             keyboard.append([button])
 
@@ -112,10 +111,10 @@ def flow1step5(client, message):
         message.reply(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 
-@Client.on_callback_query(filters.regex(get_str("receiving_addresses")))
+@Client.on_callback_query(filters.regex(get_str("receiver_addresses")))
 def flow1step6(client, query):
     user_data = get_dict(f"username:@{query.from_user.username}")
-    user_data["receiving_address"] = query.data
+    user_data["receiver_address"] = query.data
     user_data["current"] = "option"
     set_dict(f"username:@{query.from_user.username}", user_data)
 
@@ -143,15 +142,15 @@ def flow1step7(client, query):
     set_dict(f"username:@{query.from_user.username}", user_data)
 
     if query.data == "Утвердить":
-        text = "Поставка оформлена"
+        text = "Информация отправлена получателям"
         Delivery.objects.create(
             status="Отправлен",
             transport_type=user_data["transport_type"],
             transport_number=user_data["transport_number"],
             cargo_type=user_data["cargo_type"],
             weight=user_data["weight"],
-            sending_address=user_data["sending_address"],
-            receiving_address=user_data["receiving_address"],
+            sender_address=user_data["sender_address"],
+            receiver_address=user_data["receiver_address"],
             sender=query.from_user.username,
         )
     elif query.data == "Сбросить":

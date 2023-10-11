@@ -22,7 +22,7 @@ number_validator = ASCIIUsernameValidator(
 class User(AbstractUser):
     username = models.CharField(
         max_length=MAX_LENGTH,
-        verbose_name="Telegram-username",
+        verbose_name=_("username"),
         help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
         unique=True,
@@ -32,11 +32,12 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name=_("email address"),
-        help_text="Обязательное поле. Введите адрес электронной почты, например: someone@example.com",
-        unique=True,
-        error_messages={
-            "unique": "Пользователь с таким адресом электронной почты уже существует",
-        },
+        help_text="Обязательное поле. Он понадобится для восстановления пароля",
+    )
+    is_staff = models.BooleanField(
+        _("staff status"),
+        default=True,
+        help_text=_("Designates whether the user can log into this admin site."),
     )
 
     REQUIRED_FIELDS = ["email"]
@@ -71,8 +72,8 @@ class Address(models.Model):
 
 class CustomUser(models.Model):
     username = models.CharField(
-        max_length=32,
-        verbose_name="Telegram-username",
+        max_length=MAX_LENGTH,
+        verbose_name=_("username"),
         help_text="Обязательное поле. Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
         unique=True,
@@ -100,11 +101,19 @@ class CustomUser(models.Model):
         verbose_name="тип пользователя",
         choices=types,
     )
-    address = models.ForeignKey(
+    sender_address = models.ForeignKey(
         Address,
-        verbose_name="адрес",
+        verbose_name="адрес отправителя",
         on_delete=models.PROTECT,
-        related_name="users",
+        related_name="sending_users",
+        blank=True,
+        null=True,
+    )
+    receiver_address = models.ForeignKey(
+        Address,
+        verbose_name="адрес получателя",
+        on_delete=models.PROTECT,
+        related_name="receiving_users",
         blank=True,
         null=True,
     )
@@ -130,6 +139,11 @@ class Truck(models.Model):
     datetime = models.DateTimeField(
         verbose_name="дата и время добавления",
         auto_now_add=True,
+    )
+    status = models.CharField(
+        max_length=MAX_LENGTH,
+        verbose_name="статус",
+        default="Standby",
     )
 
     def __str__(self):
@@ -160,10 +174,11 @@ class Cargo(models.Model):
         ordering = ("id",)
 
 
-def char_field(verbose_name):
+def char_field(verbose_name, null=False):
     return models.CharField(
         max_length=MAX_LENGTH,
         verbose_name=verbose_name,
+        null=null,
     )
 
 
@@ -172,22 +187,15 @@ class Delivery(models.Model):
     sent_at = models.DateTimeField(
         verbose_name="дата и время отправки", default=timezone.now
     )
-    received_at = models.DateTimeField(
-        verbose_name="дата и время доставки", blank=True, null=True
-    )
+    received_at = models.DateTimeField(verbose_name="дата и время доставки", null=True)
     transport_type = char_field("тип транспорта")
     transport_number = char_field("номер транспорта")
     cargo_type = char_field("тип груза")
-    weight = models.IntegerField(verbose_name="вес (кг)")
-    sending_address = char_field("адрес отправки")
-    receiving_address = char_field("адрес доставки")
+    weight = char_field("вес (кг)")
+    sender_address = char_field("адрес отправки")
+    receiver_address = char_field("адрес доставки")
     sender = char_field("отправитель")
-    receiver = models.CharField(
-        max_length=MAX_LENGTH,
-        verbose_name="получатель",
-        blank=True,
-        null=True,
-    )
+    receiver = char_field("получатель", True)
 
     def __str__(self):
         return f"{self.transport_type}: {self.transport_number} | {self.cargo_type}: {self.weight} кг"
