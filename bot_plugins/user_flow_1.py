@@ -4,24 +4,26 @@ from .redis_client import set_dict, get_dict
 from pyrogram import Client, filters
 
 
+def find_match(users, message, attr1, attr2):
+    for user in users:
+        if getattr(user, attr1) == getattr(message.from_user, attr1):
+            if not user.user_id:
+                user.user_id = message.from_user.id
+                if getattr(message.from_user, attr2):
+                    setattr(user, attr2, getattr(message.from_user, attr2))
+                user.save()
+            return True
+
+
 @Client.on_message(filters.private)
 def verify(client, message):
     for model in [CustomUser, User]:
         users = model.objects.all()
-        for user in users:
-            if user.username == message.from_user.username:
-                if not user.user_id:
-                    user.user_id = message.from_user.id
-                    if message.from_user.phone_number:
-                        user.phone_number = message.from_user.phone_number
-                    user.save()
+        if message.from_user.username:
+            if find_match(users, message, "username", "phone_number"):
                 return True
-            if user.phone_number == message.from_user.phone_number:
-                if not user.user_id:
-                    user.user_id = message.from_user.id
-                    if message.from_user.username:
-                        user.username = message.from_user.username
-                    user.save()
+        if message.from_user.phone_number:
+            if find_match(users, message, "phone_number", "username"):
                 return True
 
     message.reply("Вы не зарегистрированы в системе")
