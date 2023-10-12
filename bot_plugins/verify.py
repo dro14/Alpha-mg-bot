@@ -9,14 +9,14 @@ async def found_match(users, update, attr1, attr2):
                 user.user_id = update.from_user.id
                 if getattr(update.from_user, attr2):
                     setattr(user, attr2, getattr(update.from_user, attr2))
-                await user.save()
+                user.save()
             return True
 
 
-async def func(_, __, update):
+async def func(_, client, update):
     if update.from_user.username or update.from_user.phone_number:
         for model in [CustomUser, User]:
-            users = await model.objects.all()
+            users = model.objects.all()
             if update.from_user.username:
                 if await found_match(users, update, "username", "phone_number"):
                     return True
@@ -24,7 +24,7 @@ async def func(_, __, update):
                 if await found_match(users, update, "phone_number", "username"):
                     return True
 
-    await update.reply("Вы не зарегистрированы в системе")
+    await client.send_message(update.from_user.id, "Вы не зарегистрированы в системе")
     return False
 
 
