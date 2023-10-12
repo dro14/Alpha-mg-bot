@@ -26,8 +26,6 @@ class User(AbstractUser):
         verbose_name=_("username"),
         help_text="Введите имя пользователя в Телеграме без собачки (@), например: my_username",
         validators=[username_validator],
-        blank=True,
-        null=True,
         unique=True,
         error_messages={
             "unique": "Пользователь с таким именем уже существует",
