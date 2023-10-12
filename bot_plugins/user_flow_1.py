@@ -134,13 +134,14 @@ def handle_callback_query(client, query):
                 reply_markup = InlineKeyboardMarkup([[button]])
 
                 for user_id in user_ids:
+                    set_dict(f"user:{user_id}", {"current": "confirm_delivery"})
                     client.send_message(user_id, text, reply_markup=reply_markup)
 
                 query.edit_message_text("Информация отправлена получателям")
             else:
                 query.edit_message_text("Поставка отменена")
 
-        case "end":
+        case "confirm_delivery":
             delivery = Delivery.objects.get(id=int(query.data))
             delivery.status = "Доставлен"
             delivery.received_at = datetime.now()
