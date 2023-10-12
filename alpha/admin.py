@@ -228,7 +228,7 @@ class DeliveryAdmin(admin.ModelAdmin):
         "receiver",
         "delete",
     )
-    list_filter = ("status", "cargo_type", "timestamp")
+    list_filter = ("status", "cargo_type", "sent_at")
     delete.short_description = "действия"
 
 
