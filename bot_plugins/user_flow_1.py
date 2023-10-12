@@ -1,42 +1,17 @@
-from alpha.models import User, Address, CustomUser, Truck, Cargo, Delivery
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from alpha.models import Address, CustomUser, Truck, Cargo, Delivery
 from .redis_client import set_dict, get_dict
 from pyrogram import Client, filters
+from .verify import verify
 
 
-def find_match(users, message, attr1, attr2):
-    for user in users:
-        if getattr(user, attr1) == getattr(message.from_user, attr1):
-            if not user.user_id:
-                user.user_id = message.from_user.id
-                if getattr(message.from_user, attr2):
-                    setattr(user, attr2, getattr(message.from_user, attr2))
-                user.save()
-            return True
-
-
-@Client.on_message(filters.private)
-def verify(client, message):
-    for model in [CustomUser, User]:
-        users = model.objects.all()
-        if message.from_user.username:
-            if find_match(users, message, "username", "phone_number"):
-                return True
-        if message.from_user.phone_number:
-            if find_match(users, message, "phone_number", "username"):
-                return True
-
-    message.reply("Вы не зарегистрированы в системе")
-    return False
-
-
-@Client.on_message(filters.private & filters.command("start"))
-def cmd_start(client, message):
+@Client.on_message(verify & filters.command("start"))
+def cmd_start(_, message):
     message.reply("Привет!\n\nДобро пожаловать в AlphaM Bot!")
 
 
-@Client.on_message(filters.private & filters.command("postavka"))
-def cmd_postavka(client, message):
+@Client.on_message(verify & filters.command("postavka"))
+def cmd_postavka(_, message):
     user_data = {"current": "cargo_type"}
     set_dict(f"user:@{message.from_user.username}", user_data)
 
@@ -50,8 +25,8 @@ def cmd_postavka(client, message):
     message.reply(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 
-@Client.on_callback_query()
-def handle_callback_query(client, query):
+@Client.on_callback_query(verify)
+def handle_callback_query(_, query):
     user_data = get_dict(f"user:@{query.from_user.username}")
 
     match user_data["current"]:
@@ -137,8 +112,8 @@ def handle_callback_query(client, query):
                 query.edit_message_text("Поставка отменена")
 
 
-@Client.on_message(filters.private & filters.regex(r"^\d+$"))
-def handle_numbers(client, message):
+@Client.on_message(verify & filters.regex(r"^\d+$"))
+def handle_numbers(_, message):
     user_data = get_dict(f"user:@{message.from_user.username}")
 
     match user_data["current"]:

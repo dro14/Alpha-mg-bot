@@ -84,6 +84,8 @@ class Address(models.Model):
         },
     )
 
+    objects = models.Manager()
+
     def __str__(self):
         return self.address
 
@@ -153,6 +155,8 @@ class CustomUser(models.Model):
         null=True,
     )
 
+    objects = models.Manager()
+
     def __str__(self):
         return self.username
 
@@ -181,6 +185,8 @@ class Truck(models.Model):
         default="Standby",
     )
 
+    objects = models.Manager()
+
     def __str__(self):
         return self.number
 
@@ -199,6 +205,8 @@ class Cargo(models.Model):
             "unique": "Такой тип груза уже cуществует",
         },
     )
+
+    objects = models.Manager()
 
     def __str__(self):
         return self.cargo_type
@@ -231,6 +239,8 @@ class Delivery(models.Model):
     receiver_address = char_field("адрес доставки")
     sender = char_field("отправитель")
     receiver = char_field("получатель", True)
+
+    objects = models.Manager()
 
     def __str__(self):
         return f"{self.transport_type}: {self.transport_number} | {self.cargo_type}: {self.weight} кг"
