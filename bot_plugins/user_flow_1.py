@@ -130,7 +130,7 @@ def handle_callback_query(client, query):
 Адрес доставки - {user_data["receiver_address"]}"""
 
                 confirm = "Подтвердить получение"
-                button = InlineKeyboardButton(confirm, callback_data=delivery.id)
+                button = InlineKeyboardButton(confirm, callback_data=str(delivery.id))
                 reply_markup = InlineKeyboardMarkup([[button]])
 
                 for user_id in user_ids:
@@ -141,7 +141,7 @@ def handle_callback_query(client, query):
                 query.edit_message_text("Поставка отменена")
 
         case "end":
-            delivery = Delivery.objects.get(id=query.data)
+            delivery = Delivery.objects.get(id=int(query.data))
             delivery.status = "Доставлен"
             delivery.received_at = datetime.now()
             delivery.receiver = (
