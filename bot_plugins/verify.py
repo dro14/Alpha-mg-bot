@@ -6,7 +6,7 @@ from pyrogram import filters
 def found_match(users, update, attr1, attr2):
     for user in users:
         if getattr(user, attr1) == getattr(update.from_user, attr1):
-            if not user.user_id:
+            if user.user_id != update.from_user.id:
                 user.user_id = update.from_user.id
                 if getattr(user, attr2) != getattr(update.from_user, attr2):
                     setattr(user, attr2, getattr(update.from_user, attr2))

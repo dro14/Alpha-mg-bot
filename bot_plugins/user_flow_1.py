@@ -2,15 +2,16 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from alpha.models import Address, CustomUser, Truck, Cargo, Delivery
 from .redis_client import set_dict, get_dict
 from pyrogram import Client, filters
+from datetime import datetime
 from .verify import verify
 
 
-@Client.on_message(verify & filters.command("start"))
+@Client.on_message(filters.command("start") & verify)
 def cmd_start(_, message):
     message.reply("Привет!\n\nДобро пожаловать в AlphaM Bot!")
 
 
-@Client.on_message(verify & filters.command("postavka"))
+@Client.on_message(filters.command("postavka") & verify)
 def cmd_postavka(_, message):
     user_data = {"current": "cargo_type"}
     set_dict(f"user:{message.from_user.id}", user_data)
@@ -26,7 +27,7 @@ def cmd_postavka(_, message):
 
 
 @Client.on_callback_query(verify)
-def handle_callback_query(_, query):
+def handle_callback_query(client, query):
     user_data = get_dict(f"user:{query.from_user.id}")
 
     match user_data["current"]:
@@ -96,13 +97,13 @@ def handle_callback_query(_, query):
             user_data["current"] = "end"
             set_dict(f"user:{query.from_user.id}", user_data)
 
-            sender = (
-                query.from_user.username
-                if query.from_user.username
-                else query.from_user.phone_number
-            )
-
             if query.data == "Утвердить":
+                sender = (
+                    query.from_user.username
+                    if query.from_user.username
+                    else query.from_user.phone_number
+                )
+
                 Delivery.objects.create(
                     status="Отправлен",
                     transport_type=user_data["transport_type"],
@@ -113,12 +114,37 @@ def handle_callback_query(_, query):
                     receiver_address=user_data["receiver_address"],
                     sender=sender,
                 )
+
+                r_address = Address.objects.get(address=user_data["receiver_address"])
+                user_ids = r_address.receiving_users.values_list("user_id", flat=True)
+
+                text = f"""\
+Поставка отправлена
+
+Тип транспорта - {user_data["transport_type"]}
+Номер транспорта - {user_data["transport_number"]}
+Дата и время отправки - Дата: {datetime.now().strftime("%d.%m.%Y")} Время: {datetime.now().strftime("%H:%M:%S")}
+Тип груза - {user_data["cargo_type"]}
+Тоннаж (в кг) - {user_data["weight"]} кг
+Адрес отправки - {user_data["sender_address"]}
+Адрес доставки - {user_data["receiver_address"]}"""
+
+                confirm = "Подтвердить получение"
+                button = InlineKeyboardButton(confirm, callback_data=confirm)
+                reply_markup = InlineKeyboardMarkup([[button]])
+
+                for user_id in user_ids:
+                    client.send_message(user_id, text, reply_markup=reply_markup)
+
                 query.edit_message_text("Информация отправлена получателям")
             else:
                 query.edit_message_text("Поставка отменена")
 
+        case "end":
+            query.edit_message_text("Поставка принята")
 
-@Client.on_message(verify & filters.regex(r"^\d+$"))
+
+@Client.on_message(filters.regex(r"^\d+$") & verify)
 def handle_numbers(_, message):
     user_data = get_dict(f"user:{message.from_user.id}")
 

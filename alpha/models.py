@@ -66,7 +66,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ["email"]
 
     def __str__(self):
-        return self.username
+        return self.username if self.username else self.phone_number
 
     class Meta:
         verbose_name = "администратор"
@@ -158,7 +158,7 @@ class CustomUser(models.Model):
     objects = models.Manager()
 
     def __str__(self):
-        return self.username
+        return self.username if self.username else self.phone_number
 
     class Meta:
         verbose_name = "пользователь"
