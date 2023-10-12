@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "alpha",
     "bot.apps.BotConfig",
+    "rangefilter",
 ]
 
 MIDDLEWARE = [

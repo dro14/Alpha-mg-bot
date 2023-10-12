@@ -3,6 +3,7 @@ from .models import User, Address, CustomUser, Truck, Cargo, Delivery
 from django.contrib.auth.models import Permission
 from .forms import CustomUserForm, TruckForm
 from django.utils.html import format_html
+from rangefilter.filters import DateRangeFilter
 from django.contrib import admin
 
 # These are the models for which you want to assign all permissions
@@ -228,7 +229,7 @@ class DeliveryAdmin(admin.ModelAdmin):
         "receiver",
         "delete",
     )
-    list_filter = ("status", "cargo_type", "sent_at")
+    list_filter = ("status", "cargo_type", "sent_at", ("sent_at", DateRangeFilter))
     delete.short_description = "действия"
 
 
