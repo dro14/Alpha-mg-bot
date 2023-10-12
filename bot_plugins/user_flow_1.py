@@ -13,7 +13,7 @@ def cmd_start(_, message):
 @Client.on_message(verify & filters.command("postavka"))
 def cmd_postavka(_, message):
     user_data = {"current": "cargo_type"}
-    set_dict(f"user:@{message.from_user.username}", user_data)
+    set_dict(f"user:{message.from_user.id}", user_data)
 
     cargo_types = Cargo.objects.values_list("cargo_type", flat=True)
     keyboard = []
@@ -27,13 +27,13 @@ def cmd_postavka(_, message):
 
 @Client.on_callback_query(verify)
 def handle_callback_query(_, query):
-    user_data = get_dict(f"user:@{query.from_user.username}")
+    user_data = get_dict(f"user:{query.from_user.id}")
 
     match user_data["current"]:
         case "cargo_type":
             user_data["cargo_type"] = query.data
             user_data["current"] = "transport_type"
-            set_dict(f"user:@{query.from_user.username}", user_data)
+            set_dict(f"user:{query.from_user.id}", user_data)
 
             transport_types = ["Самосвал", "Вагон"]
             keyboard = []
@@ -47,7 +47,7 @@ def handle_callback_query(_, query):
         case "transport_type":
             user_data["transport_type"] = query.data
             user_data["current"] = "transport_number"
-            set_dict(f"user:@{query.from_user.username}", user_data)
+            set_dict(f"user:{query.from_user.id}", user_data)
 
             if query.data == "Самосвал":
                 truck_numbers = Truck.objects.values_list("number", flat=True)
@@ -67,7 +67,7 @@ def handle_callback_query(_, query):
         case "transport_number":
             user_data["transport_number"] = query.data
             user_data["current"] = "weight"
-            set_dict(f"user:@{query.from_user.username}", user_data)
+            set_dict(f"user:{query.from_user.id}", user_data)
 
             text = "Введите вес груза (только цифры в кг):"
             query.edit_message_text(text)
@@ -75,7 +75,7 @@ def handle_callback_query(_, query):
         case "receiver_address":
             user_data["receiver_address"] = query.data
             user_data["current"] = "option"
-            set_dict(f"user:@{query.from_user.username}", user_data)
+            set_dict(f"user:{query.from_user.id}", user_data)
 
             options = ["Утвердить", "Сбросить"]
             keyboard = []
@@ -94,7 +94,13 @@ def handle_callback_query(_, query):
         case "option":
             user_data["option"] = query.data
             user_data["current"] = "end"
-            set_dict(f"user:@{query.from_user.username}", user_data)
+            set_dict(f"user:{query.from_user.id}", user_data)
+
+            sender = (
+                query.from_user.username
+                if query.from_user.username
+                else query.from_user.phone_number
+            )
 
             if query.data == "Утвердить":
                 Delivery.objects.create(
@@ -105,7 +111,7 @@ def handle_callback_query(_, query):
                     weight=user_data["weight"],
                     sender_address=user_data["sender_address"],
                     receiver_address=user_data["receiver_address"],
-                    sender=query.from_user.username,
+                    sender=sender,
                 )
                 query.edit_message_text("Информация отправлена получателям")
             else:
@@ -114,24 +120,24 @@ def handle_callback_query(_, query):
 
 @Client.on_message(verify & filters.regex(r"^\d+$"))
 def handle_numbers(_, message):
-    user_data = get_dict(f"user:@{message.from_user.username}")
+    user_data = get_dict(f"user:{message.from_user.id}")
 
     match user_data["current"]:
         case "transport_number":
             user_data["transport_number"] = message.text
             user_data["current"] = "weight"
-            set_dict(f"user:@{message.from_user.username}", user_data)
+            set_dict(f"user:{message.from_user.id}", user_data)
 
             text = "Введите вес груза (только цифры в кг):"
             message.reply(text)
 
         case "weight":
-            user = CustomUser.objects.get(username=message.from_user.username)
+            user = CustomUser.objects.get(user_id=message.from_user.id)
             sender_address = user.sender_address.address
             user_data["sender_address"] = sender_address
             user_data["weight"] = message.text
             user_data["current"] = "receiver_address"
-            set_dict(f"user:@{message.from_user.username}", user_data)
+            set_dict(f"user:{message.from_user.id}", user_data)
 
             receiver_addresses = Address.objects.values_list("address", flat=True)
             keyboard = []
