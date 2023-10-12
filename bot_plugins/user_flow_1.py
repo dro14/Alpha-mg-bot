@@ -150,6 +150,7 @@ def handle_callback_query(client, query):
                 if query.from_user.username
                 else query.from_user.phone_number
             )
+            delivery.save()
             query.edit_message_text("Поставка принята")
 
 
