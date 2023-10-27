@@ -215,7 +215,7 @@ class DeliveryAdmin(admin.ModelAdmin):
         link = ""
         for i in range(1, 5):
             if getattr(obj, f"photo_{i}"):
-                link += f'<a href="/media/delivery_{obj.id}_photo_{i}.jpg" target="_blank">посмотреть_{i}</a> '
+                link += f'<a href="/media/delivery_{obj.id}_photo_{i}.jpg" target="_blank">Скачать</a> '
         return format_html(link)
 
     def has_add_permission(self, request):
