@@ -2,8 +2,10 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from alpha.models import Address, CustomUser, Truck, Cargo, Delivery
 from .redis_client import set_dict, get_dict
 from pyrogram import Client, filters
-from datetime import datetime
+from django.utils import timezone
 from .verify import verify
+
+photos = {}
 
 
 @Client.on_message(filters.command("start") & verify)
@@ -73,6 +75,23 @@ def handle_callback_query(client, query):
             text = "Введите вес груза (только цифры в кг):"
             query.edit_message_text(text)
 
+        case "photo_2" | "photo_3":
+            user = CustomUser.objects.get(user_id=query.from_user.id)
+            sender_address = user.sender_address.address
+            user_data["sender_address"] = sender_address
+            user_data["current"] = "receiver_address"
+            set_dict(f"user:{query.from_user.id}", user_data)
+
+            receiver_addresses = Address.objects.values_list("address", flat=True)
+            keyboard = []
+            for a in receiver_addresses:
+                if a != sender_address:
+                    button = InlineKeyboardButton(a, callback_data=a)
+                    keyboard.append([button])
+
+            text = "Выберите адрес доставки:"
+            query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+
         case "receiver_address":
             user_data["receiver_address"] = query.data
             user_data["current"] = "option"
@@ -104,6 +123,13 @@ def handle_callback_query(client, query):
                     else query.from_user.phone_number
                 )
 
+                sender_photos = {}
+                photo_count = photos[f"photo_count:{query.from_user.id}"]
+                for i in range(1, photo_count + 1):
+                    key = f"photo_{i}:{query.from_user.id}"
+                    sender_photos[f"photo_{i}"] = photos[key].getvalue()
+                    photos.pop(key)
+
                 delivery = Delivery.objects.create(
                     status="Отправлен",
                     transport_type=user_data["transport_type"],
@@ -113,6 +139,7 @@ def handle_callback_query(client, query):
                     sender_address=user_data["sender_address"],
                     receiver_address=user_data["receiver_address"],
                     sender=sender,
+                    **sender_photos,
                 )
 
                 r_address = Address.objects.get(address=user_data["receiver_address"])
@@ -123,7 +150,7 @@ def handle_callback_query(client, query):
 
 Тип транспорта - {user_data["transport_type"]}
 Номер транспорта - {user_data["transport_number"]}
-Дата и время отправки - Дата: {datetime.now().strftime("%d.%m.%Y")} Время: {datetime.now().strftime("%H:%M:%S")}
+Дата и время отправки - Дата: {timezone.now().strftime("%d.%m.%Y")} Время: {timezone.now().strftime("%H:%M:%S")}
 Тип груза - {user_data["cargo_type"]}
 Тоннаж (в кг) - {user_data["weight"]} кг
 Адрес отправки - {user_data["sender_address"]}
@@ -144,7 +171,7 @@ def handle_callback_query(client, query):
         case "confirm_delivery":
             delivery = Delivery.objects.get(id=int(query.data))
             delivery.status = "Доставлен"
-            delivery.received_at = datetime.now()
+            delivery.received_at = timezone.now()
             delivery.receiver = (
                 query.from_user.username
                 if query.from_user.username
@@ -168,12 +195,56 @@ def handle_numbers(_, message):
             message.reply(text)
 
         case "weight":
+            user_data["weight"] = message.text
+            user_data["current"] = "photo_1"
+            set_dict(f"user:{message.from_user.id}", user_data)
+
+            text = "Загрузите первое фото груза:\n\n(Чтобы загрузить, нажмите кнопку в виде скрепки)"
+            message.reply(text)
+
+
+@Client.on_message(filters.photo & verify)
+def handle_photo(client, message):
+    user_data = get_dict(f"user:{message.from_user.id}")
+
+    match user_data["current"]:
+        case "photo_1" | "photo_2":
+            current = user_data["current"]
+            user_data[current] = message.photo.file_id
+            user_data["current"] = f"photo_{int(current[-1:]) + 1}"
+            set_dict(f"user:{message.from_user.id}", user_data)
+
+            key = f"{current}:{message.from_user.id}"
+            photos[key] = client.download_media(
+                message.photo.file_id,
+                in_memory=True,
+            )
+
+            enough = "Достаточно"
+            button = InlineKeyboardButton(enough, callback_data=enough)
+            reply_markup = InlineKeyboardMarkup([[button]])
+
+            if current.endswith("1"):
+                text = "Загрузите второе фото:"
+                photos[f"photo_count:{message.from_user.id}"] = 1
+            else:
+                text = "Загрузите третье фото:"
+                photos[f"photo_count:{message.from_user.id}"] = 2
+            message.reply(text, reply_markup=reply_markup)
+
+        case "photo_3":
             user = CustomUser.objects.get(user_id=message.from_user.id)
             sender_address = user.sender_address.address
             user_data["sender_address"] = sender_address
-            user_data["weight"] = message.text
+            user_data["photo_3"] = message.photo.file_id
             user_data["current"] = "receiver_address"
             set_dict(f"user:{message.from_user.id}", user_data)
+
+            key = f"photo_3:{message.from_user.id}"
+            photos[key] = client.download_media(
+                message.photo.file_id,
+                in_memory=True,
+            )
 
             receiver_addresses = Address.objects.values_list("address", flat=True)
             keyboard = []
@@ -183,4 +254,5 @@ def handle_numbers(_, message):
                     keyboard.append([button])
 
             text = "Выберите адрес доставки:"
+            photos[f"photo_count:{message.from_user.id}"] = 3
             message.reply(text, reply_markup=InlineKeyboardMarkup(keyboard))

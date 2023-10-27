@@ -79,6 +79,7 @@ class UserAdmin(DefaultUserAdmin):
         "change_delete",
     )
     list_filter = ()
+    list_per_page = 50
     search_fields = ("username", "email")
     change_delete.short_description = "действия"
 
@@ -128,6 +129,7 @@ class AddressAdmin(admin.ModelAdmin):
         "receivers",
         "change_delete",
     )
+    list_per_page = 50
     search_fields = ("address",)
     senders.short_description = "отправители"
     receivers.short_description = "получатели"
@@ -153,6 +155,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         "change_delete",
     )
     form = CustomUserForm
+    list_per_page = 50
     search_fields = ("username", "phone_number")
     change_delete.short_description = "действия"
 
@@ -174,6 +177,7 @@ class TruckAdmin(admin.ModelAdmin):
         "change_delete",
     )
     form = TruckForm
+    list_per_page = 50
     search_fields = ("number",)
     change_delete.short_description = "действия"
 
@@ -192,6 +196,7 @@ class CargoAdmin(admin.ModelAdmin):
         "cargo_type",
         "change_delete",
     )
+    list_per_page = 50
     search_fields = ("cargo_type",)
     change_delete.short_description = "действия"
 
@@ -205,6 +210,13 @@ class DeliveryAdmin(admin.ModelAdmin):
             )
         else:
             return "поставка завершена"
+
+    def photo(self, obj):
+        link = ""
+        for i in range(1, 5):
+            if getattr(obj, f"photo_{i}"):
+                link += f'<a href="/media/delivery_{obj.id}_photo_{i}.jpg" target="_blank">посмотреть_{i}</a> '
+        return format_html(link)
 
     def has_add_permission(self, request):
         return False
@@ -227,10 +239,18 @@ class DeliveryAdmin(admin.ModelAdmin):
         "receiver_address",
         "sender",
         "receiver",
+        "photo",
         "delete",
     )
-    list_filter = ("status", "cargo_type", "sent_at", ("sent_at", DateRangeFilter))
+    list_filter = (
+        "status",
+        "cargo_type",
+        "sent_at",
+        ("sent_at", DateRangeFilter),
+    )
+    list_per_page = 50
     delete.short_description = "действия"
+    photo.short_description = "фото"
 
 
 admin.site.unregister(Group)

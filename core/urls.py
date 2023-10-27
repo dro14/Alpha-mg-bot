@@ -33,6 +33,10 @@ urlpatterns = [
         views.redirect_view,
     ),
     path(
+        "media/<str:file_name>/",
+        views.download_file,
+    ),
+    path(
         "accounts/password_reset/",
         auth_views.PasswordResetView.as_view(),
         name="admin_password_reset",

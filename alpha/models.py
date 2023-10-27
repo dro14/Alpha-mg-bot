@@ -237,6 +237,10 @@ class Delivery(models.Model):
     receiver_address = char_field("адрес доставки")
     sender = char_field("отправитель")
     receiver = char_field("получатель", True)
+    photo_1 = models.BinaryField(null=True)
+    photo_2 = models.BinaryField(null=True)
+    photo_3 = models.BinaryField(null=True)
+    photo_4 = models.BinaryField(null=True)
 
     objects = models.Manager()
 
