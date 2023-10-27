@@ -29,6 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "localhost",
+    "127.0.0.1",
     os.environ["HOST_DOMAIN"],
 ]
 
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     "alpha",
     "bot.apps.BotConfig",
     "rangefilter",
+    "import_export",
 ]
 
 MIDDLEWARE = [

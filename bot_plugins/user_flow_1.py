@@ -199,7 +199,7 @@ def handle_numbers(_, message):
             user_data["current"] = "photo_1"
             set_dict(f"user:{message.from_user.id}", user_data)
 
-            text = "Загрузите первое фото груза:\n\n(Чтобы загрузить, нажмите кнопку в виде скрепки)"
+            text = "Загрузите первое фото груза:\n\n(Чтобы загрузить, нажмите кнопку ниже в виде скрепки)"
             message.reply(text)
 
 

@@ -1,9 +1,11 @@
 from django.contrib.auth.admin import Group, UserAdmin as DefaultUserAdmin
 from .models import User, Address, CustomUser, Truck, Cargo, Delivery
+from import_export.admin import ImportExportModelAdmin
 from django.contrib.auth.models import Permission
 from .forms import CustomUserForm, TruckForm
 from django.utils.html import format_html
 from rangefilter.filters import DateRangeFilter
+from .resources import DeliveryResource
 from django.contrib import admin
 
 # These are the models for which you want to assign all permissions
@@ -201,7 +203,7 @@ class CargoAdmin(admin.ModelAdmin):
     change_delete.short_description = "действия"
 
 
-class DeliveryAdmin(admin.ModelAdmin):
+class DeliveryAdmin(ImportExportModelAdmin):
     def delete(self, obj):
         if obj.status == "Отправлен":
             return format_html(
@@ -227,6 +229,9 @@ class DeliveryAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return obj and obj.status == "Отправлен"
 
+    def has_import_permission(self, request, *args, **kwargs):
+        return False
+
     list_display = (
         "status",
         "sent_at",
@@ -249,6 +254,7 @@ class DeliveryAdmin(admin.ModelAdmin):
         ("sent_at", DateRangeFilter),
     )
     list_per_page = 50
+    resource_class = DeliveryResource
     delete.short_description = "действия"
     photo.short_description = "фото"
 
