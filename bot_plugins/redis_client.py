@@ -20,4 +20,4 @@ def get_dict(key):
         value = value.decode("utf-8")
         return json.loads(value)
     else:
-        return {}
+        return {"current": ""}
