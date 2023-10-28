@@ -1,7 +1,7 @@
 from alpha.models import User, CustomUser
 from asgiref.sync import sync_to_async
 from pyrogram import filters
-import utils
+from . import utils
 
 found_match = sync_to_async(utils.found_match)
 is_in = sync_to_async(utils.is_in)
