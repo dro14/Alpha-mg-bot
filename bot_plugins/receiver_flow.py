@@ -27,7 +27,7 @@ def complete_delivery(client, query, user_data):
     delivery.save()
 
     users = User.objects.exclude(user_id=None)
-    users = users.values_list("user_id", flat=True)
+    users = list(users.values_list("user_id", flat=True))
     users.append(get_user_id(delivery.sender))
     text = complete_delivery_message(delivery)
     for user_id in users:
@@ -48,7 +48,7 @@ def receive_comment(client, message, user_data, with_photo):
     delivery.save()
 
     users = User.objects.exclude(user_id=None)
-    users = users.values_list("user_id", flat=True)
+    users = list(users.values_list("user_id", flat=True))
     users.append(get_user_id(delivery.sender))
     text = complete_delivery_message(delivery)
     for user_id in users:
