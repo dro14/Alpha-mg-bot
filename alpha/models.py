@@ -177,10 +177,14 @@ class Truck(models.Model):
         verbose_name="дата и время добавления",
         auto_now_add=True,
     )
+    statuses = (
+        ("Свободен", "Свободен"),
+        ("Занят", "Занят"),
+    )
     status = models.CharField(
         max_length=MAX_LENGTH,
         verbose_name="статус",
-        default="Свободен",
+        choices=statuses,
     )
 
     objects = models.Manager()

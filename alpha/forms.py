@@ -59,4 +59,4 @@ class CustomUserForm(ModelForm):
 class TruckForm(ModelForm):
     class Meta:
         model = Truck
-        fields = ("number",)
+        fields = ("number", "status")
