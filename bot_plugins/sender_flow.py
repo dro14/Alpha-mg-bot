@@ -1,6 +1,7 @@
-from alpha.models import User, Address, CustomUser, Truck, Delivery
 from .redis_client import set_dict
+from alpha.models import Address
 from .utils import *
+from .texts import *
 
 
 def cargo_type(_, query, user_data):

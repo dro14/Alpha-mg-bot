@@ -1,6 +1,6 @@
 from .redis_client import set_dict
-from alpha.models import User
 from .utils import *
+from .texts import *
 
 
 def confirm_delivery(_, query, user_data):
@@ -12,14 +12,7 @@ def confirm_delivery(_, query, user_data):
     button = InlineKeyboardButton(button_text, callback_data=button_text)
     reply_markup = InlineKeyboardMarkup([[button]])
 
-    text = """Отправьте фото и/или комментарий. Можно загружать:
-
-- только фото (чтобы загрузить, нажмите кнопку ниже в виде скрепки)
-- только комментарий
-- фото с комментарием (при добавлении фото, поле для текста появится ниже)
-
-Если желаете оставить пустым, нажмите кнопку \"Завершить поставку\""""
-    query.edit_message_text(text, reply_markup=reply_markup)
+    query.edit_message_text(complete_delivery_text, reply_markup=reply_markup)
 
 
 def complete_delivery(client, query, user_data):
@@ -29,7 +22,7 @@ def complete_delivery(client, query, user_data):
     users = User.objects.exclude(user_id=None)
     users = list(users.values_list("user_id", flat=True))
     users.append(get_user_id(delivery.sender))
-    text = complete_delivery_message(delivery)
+    text = finish_delivery_message(delivery)
     for user_id in users:
         client.send_message(user_id, text)
 
@@ -50,7 +43,7 @@ def receive_comment(client, message, user_data, with_photo):
     users = User.objects.exclude(user_id=None)
     users = list(users.values_list("user_id", flat=True))
     users.append(get_user_id(delivery.sender))
-    text = complete_delivery_message(delivery)
+    text = finish_delivery_message(delivery)
     for user_id in users:
         if with_photo:
             client.send_photo(user_id, bytes_io, caption=text)

@@ -1,9 +1,8 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
-from alpha.models import CustomUser, Truck, Delivery
+from alpha.models import User, CustomUser, Truck, Delivery
 from django.utils import timezone
 from .redis_client import redis
 from io import BytesIO
-import pytz
 
 
 def make_reply_markup(items):
@@ -12,48 +11,6 @@ def make_reply_markup(items):
         button = InlineKeyboardButton(item, callback_data=item)
         keyboard.append([button])
     return InlineKeyboardMarkup(keyboard)
-
-
-def end_message(user_data):
-    return f"""\
-Тип транспорта - {user_data["transport_type"]}
-Номер транспорта - {user_data["transport_number"]}
-Тип груза - {user_data["cargo_type"]}
-Вес груза - {user_data["weight"]} кг
-Адрес отправки - {user_data["sender_address"]}
-Адрес доставки - {user_data["receiver_address"]}"""
-
-
-def confirm_delivery_message(user_data):
-    tz = pytz.timezone("Asia/Tashkent")
-    return f"""\
-Груз отправлен    
-
-Тип транспорта - {user_data["transport_type"]}
-Номер транспорта - {user_data["transport_number"]}
-Тип груза - {user_data["cargo_type"]}
-Вес груза - {user_data["weight"]} кг
-Адрес отправки - {user_data["sender_address"]}
-Адрес доставки - {user_data["receiver_address"]}
-Дата и время отправки - {timezone.now().astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}"""
-
-
-def complete_delivery_message(delivery):
-    comment = ""
-    if delivery.comment:
-        comment = f"\nКомментарий - {delivery.comment}"
-    tz = pytz.timezone("Asia/Tashkent")
-    return f"""\
-Груз доставлен    
-
-Тип транспорта - {delivery.transport_type}
-Номер транспорта - {delivery.transport_number}
-Тип груза - {delivery.cargo_type}
-Вес груза - {delivery.weight} кг
-Адрес отправки - {delivery.sender_address}
-Адрес доставки - {delivery.receiver_address}
-Дата и время отправки - {delivery.sent_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
-Дата и время доставки - {delivery.received_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}{comment}"""
 
 
 def user_str(user):
@@ -86,20 +43,27 @@ def make_album(caption, photos=None, user_id=None):
         return media
 
 
-def found_match(users, attr, value):
-    for user in users:
-        if getattr(user, attr) == value:
-            return user.user_id
+def get_user(account):
+    is_admin = False
+    for model in [CustomUser, User]:
+        users = model.objects.all()
+        for user in users:
+            if user.username == account.username:
+                return user, is_admin
+        for user in users:
+            if user.phone_number == account.phone_number:
+                return user, is_admin
+        is_admin = True
 
 
 def get_user_id(value):
     users = CustomUser.objects.all()
-    user_id = found_match(users, "username", value)
-    if user_id:
-        return user_id
-    user_id = found_match(users, "phone_number", value)
-    if user_id:
-        return user_id
+    for user in users:
+        if user.username == value:
+            return user.user_id
+    for user in users:
+        if user.phone_number == value:
+            return user.user_id
 
 
 def update_truck(delivery, status):
