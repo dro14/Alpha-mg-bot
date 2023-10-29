@@ -82,6 +82,7 @@ class UserAdmin(DefaultUserAdmin):
     )
     list_filter = ()
     list_per_page = 50
+    ordering = ("id",)
     search_fields = ("username", "email")
     change_delete.short_description = "действия"
 
