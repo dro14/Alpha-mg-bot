@@ -245,7 +245,7 @@ class Delivery(models.Model):
     objects = models.Manager()
 
     def __str__(self):
-        return f"{self.transport_type}: {self.transport_number} | {self.cargo_type}: {self.weight} кг"
+        return f"{self.transport_type} {self.transport_number} | {self.weight} кг {self.cargo_type}"
 
     class Meta:
         verbose_name = "поставка"

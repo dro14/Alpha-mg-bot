@@ -1,10 +1,28 @@
 from alpha.models import User, CustomUser
 from asgiref.sync import sync_to_async
 from pyrogram import filters
-from . import utils
 
-found_match = sync_to_async(utils.found_match)
-is_in = sync_to_async(utils.is_in)
+
+def found_match(users, update, attr1, attr2):
+    for user in users:
+        if getattr(user, attr1) == getattr(update.from_user, attr1):
+            if user.user_id != update.from_user.id:
+                user.user_id = update.from_user.id
+                if getattr(update.from_user, attr2):
+                    setattr(user, attr2, getattr(update.from_user, attr2))
+                user.save()
+            return True
+
+
+def is_in(user, users):
+    for u in users:
+        if user.id == u.user_id:
+            return True
+    return False
+
+
+afound_match = sync_to_async(found_match)
+ais_in = sync_to_async(is_in)
 
 
 async def is_registered(_, client, update):
@@ -12,10 +30,10 @@ async def is_registered(_, client, update):
         for model in [CustomUser, User]:
             users = model.objects.all()
             if update.from_user.username:
-                if await found_match(users, update, "username", "phone_number"):
+                if await afound_match(users, update, "username", "phone_number"):
                     return True
             if update.from_user.phone_number:
-                if await found_match(users, update, "phone_number", "username"):
+                if await afound_match(users, update, "phone_number", "username"):
                     return True
 
     await client.send_message(update.from_user.id, "Вы не зарегистрированы в системе")
@@ -24,7 +42,7 @@ async def is_registered(_, client, update):
 
 async def is_admin_verbose(_, client, update):
     admins = User.objects.all()
-    if await is_in(update.from_user, admins):
+    if await ais_in(update.from_user, admins):
         return True
 
     await client.send_message(update.from_user.id, "Вы не являетесь администратором")
@@ -35,7 +53,7 @@ async def is_sender_verbose(_, client, update):
     senders = CustomUser.objects.filter(
         type__in=["Отправитель", "Отправитель и Получатель"]
     )
-    if await is_in(update.from_user, senders):
+    if await ais_in(update.from_user, senders):
         return True
 
     await client.send_message(update.from_user.id, "Вы не являетесь отправителем")
@@ -46,7 +64,7 @@ async def is_receiver_verbose(_, client, update):
     receivers = CustomUser.objects.filter(
         type__in=["Получатель", "Отправитель и Получатель"]
     )
-    if await is_in(update.from_user, receivers):
+    if await ais_in(update.from_user, receivers):
         return True
 
     await client.send_message(update.from_user.id, "Вы не являетесь получателем")
@@ -55,21 +73,21 @@ async def is_receiver_verbose(_, client, update):
 
 async def is_admin(_, __, update):
     admins = User.objects.all()
-    return await is_in(update.from_user, admins)
+    return await ais_in(update.from_user, admins)
 
 
 async def is_sender(_, __, update):
     senders = CustomUser.objects.filter(
         type__in=["Отправитель", "Отправитель и Получатель"]
     )
-    return await is_in(update.from_user, senders)
+    return await ais_in(update.from_user, senders)
 
 
 async def is_receiver(_, __, update):
     receivers = CustomUser.objects.filter(
         type__in=["Получатель", "Отправитель и Получатель"]
     )
-    return await is_in(update.from_user, receivers)
+    return await ais_in(update.from_user, receivers)
 
 
 registered = filters.create(is_registered)
