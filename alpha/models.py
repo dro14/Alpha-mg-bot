@@ -180,7 +180,7 @@ class Truck(models.Model):
     status = models.CharField(
         max_length=MAX_LENGTH,
         verbose_name="статус",
-        default="Standby",
+        default="Свободен",
     )
 
     objects = models.Manager()
@@ -240,6 +240,7 @@ class Delivery(models.Model):
     photo_1 = models.BinaryField(null=True)
     photo_2 = models.BinaryField(null=True)
     photo_3 = models.BinaryField(null=True)
+    comment = models.TextField(verbose_name="комментарий", null=True)
     photo_4 = models.BinaryField(null=True)
 
     objects = models.Manager()

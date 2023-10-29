@@ -21,7 +21,8 @@ def transport_type(_, query, user_data):
     set_dict(f"user:{query.from_user.id}", user_data)
 
     if query.data == "Самосвал":
-        truck_numbers = Truck.objects.values_list("number", flat=True)
+        truck_numbers = Truck.objects.filter(status="Свободен")
+        truck_numbers = truck_numbers.values_list("number", flat=True)
         reply_markup = make_reply_markup(truck_numbers)
 
         text = "Выберите государственный номер самосвала:"
@@ -64,11 +65,11 @@ def photo_1_2(client, message, user_data):
     user_data["current"] = f"photo_{int(current[-1:]) + 1}"
     set_dict(f"user:{message.from_user.id}", user_data)
 
-    key = f"{current}:{message.from_user.id}"
     binary_data = client.download_media(
         message.photo.file_id,
         in_memory=True,
     ).getvalue()
+    key = f"{current}:{message.from_user.id}"
     redis.set(key, binary_data)
 
     enough = "Достаточно"
@@ -107,11 +108,11 @@ def photo_3(client, message, user_data):
     user_data["current"] = "receiver_address"
     set_dict(f"user:{message.from_user.id}", user_data)
 
-    key = f"photo_3:{message.from_user.id}"
     binary_data = client.download_media(
         message.photo.file_id,
         in_memory=True,
     ).getvalue()
+    key = f"photo_3:{message.from_user.id}"
     redis.set(key, binary_data)
 
     receiver_addresses = Address.objects.exclude(address=sender_address)
@@ -163,15 +164,14 @@ def end(client, query, user_data):
         caption = confirm_delivery_message(user_data)
         media = make_album(caption, photos=photos)
 
-        text = "Груз отправлен"
-        button = InlineKeyboardButton(
-            "Подтвердить получение", callback_data=str(delivery.id)
-        )
+        text = "При получении груза, нажмите кнопку ниже"
+
+        button_text = "Подтвердить получение"
+        button = InlineKeyboardButton(button_text, callback_data=str(delivery.id))
         reply_markup = InlineKeyboardMarkup([[button]])
 
         address = Address.objects.get(address=user_data["receiver_address"])
         receivers = address.receiving_users.values_list("user_id", flat=True)
-
         for user_id in receivers:
             set_dict(f"user:{user_id}", {"current": "confirm_delivery"})
             client.send_media_group(user_id, media)
@@ -179,10 +179,10 @@ def end(client, query, user_data):
 
         admins = User.objects.exclude(user_id=None)
         admins = admins.values_list("user_id", flat=True)
-
         for user_id in admins:
             client.send_media_group(user_id, media)
 
+        update_truck(delivery, "Отправлен")
         query.edit_message_text("Поставка оформлена")
     else:
         photo_count = int(redis.get(f"photo_count:{query.from_user.id}"))

@@ -6,7 +6,7 @@ from .sender_flow import *
 
 
 @Client.on_callback_query(registered & (sender | receiver))
-def handle_sender_callback_query(client, query):
+def handle_callback_query(client, query):
     user_data = get_dict(f"user:{query.from_user.id}")
     match user_data["current"]:
         case "cargo_type":
@@ -23,10 +23,12 @@ def handle_sender_callback_query(client, query):
             end(client, query, user_data)
         case "confirm_delivery":
             confirm_delivery(client, query, user_data)
+        case "complete_delivery":
+            complete_delivery(client, query, user_data)
 
 
-@Client.on_message(filters.regex(r"^\d+$") & registered & sender)
-def handle_sender_numbers(client, message):
+@Client.on_message(filters.regex(r"^\d+$") & registered & (sender | receiver))
+def handle_numbers(client, message):
     user_data = get_dict(f"user:{message.from_user.id}")
     match user_data["current"]:
         case "transport_number":
@@ -35,11 +37,21 @@ def handle_sender_numbers(client, message):
             weight(client, message, user_data)
 
 
-@Client.on_message(filters.photo & registered & sender)
-def handle_sender_photos(client, message):
+@Client.on_message(filters.photo & registered & (sender | receiver))
+def handle_photos(client, message):
     user_data = get_dict(f"user:{message.from_user.id}")
     match user_data["current"]:
         case "photo_1" | "photo_2":
             photo_1_2(client, message, user_data)
         case "photo_3":
             photo_3(client, message, user_data)
+        case "complete_delivery":
+            receive_comment(client, message, user_data, True)
+
+
+@Client.on_message(registered & (sender | receiver))
+def handle_text(client, message):
+    user_data = get_dict(f"user:{message.from_user.id}")
+    match user_data["current"]:
+        case "complete_delivery":
+            receive_comment(client, message, user_data, False)

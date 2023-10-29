@@ -47,6 +47,10 @@ class DeliveryResource(resources.ModelResource):
         attribute="receiver",
         column_name="Получатель",
     )
+    comment = fields.Field(
+        attribute="comment",
+        column_name="Комментарий",
+    )
 
     class Meta:
         model = Delivery
@@ -62,4 +66,5 @@ class DeliveryResource(resources.ModelResource):
             "receiver_address",
             "sender",
             "receiver",
+            "comment",
         )

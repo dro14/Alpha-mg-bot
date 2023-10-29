@@ -244,6 +244,7 @@ class DeliveryAdmin(ImportExportModelAdmin):
         "receiver_address",
         "sender",
         "receiver",
+        "comment",
         "photo",
         "delete",
     )

@@ -1,4 +1,5 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
+from alpha.models import CustomUser, Truck, Delivery
 from django.utils import timezone
 from .redis_client import redis
 from io import BytesIO
@@ -26,6 +27,8 @@ def end_message(user_data):
 def confirm_delivery_message(user_data):
     tz = pytz.timezone("Asia/Tashkent")
     return f"""\
+Груз отправлен    
+
 Тип транспорта - {user_data["transport_type"]}
 Номер транспорта - {user_data["transport_number"]}
 Тип груза - {user_data["cargo_type"]}
@@ -33,6 +36,22 @@ def confirm_delivery_message(user_data):
 Адрес отправки - {user_data["sender_address"]}
 Адрес доставки - {user_data["receiver_address"]}
 Дата и время отправки - {timezone.now().astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}"""
+
+
+def complete_delivery_message(delivery):
+    tz = pytz.timezone("Asia/Tashkent")
+    return f"""\
+Груз доставлен    
+
+Тип транспорта - {delivery.transport_type}
+Номер транспорта - {delivery.transport_number}
+Тип груза - {delivery.cargo_type}
+Вес груза - {delivery.weight} кг
+Адрес отправки - {delivery.sender_address}
+Адрес доставки - {delivery.receiver_address}
+Дата и время отправки - {delivery.sent_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
+Дата и время доставки - {delivery.received_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
+Комментарий - {delivery.comment}"""
 
 
 def user_str(user):
@@ -63,3 +82,36 @@ def make_album(caption, photos=None, user_id=None):
             )
             caption = ""
         return media
+
+
+def found_match(users, attr, value):
+    for user in users:
+        if getattr(user, attr) == value:
+            return user.user_id
+
+
+def get_user_id(value):
+    users = CustomUser.objects.all()
+    user_id = found_match(users, "username", value)
+    if user_id:
+        return user_id
+    user_id = found_match(users, "phone_number", value)
+    if user_id:
+        return user_id
+
+
+def update_truck(delivery, status):
+    if delivery.transport_type == "Самосвал":
+        truck = Truck.objects.get(number=delivery.transport_number)
+        truck.status = status
+        truck.save()
+
+
+def get_delivery(user, user_data):
+    delivery_id = int(user_data["delivery_id"])
+    redis.delete(f"user:{user.id}")
+    delivery = Delivery.objects.get(id=delivery_id)
+    delivery.status = "Доставлен"
+    delivery.received_at = timezone.now()
+    delivery.receiver = user_str(user)
+    return delivery
