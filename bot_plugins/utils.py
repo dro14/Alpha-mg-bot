@@ -2,6 +2,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMedi
 from django.utils import timezone
 from .redis_client import redis
 from io import BytesIO
+import pytz
 
 
 def make_reply_markup(items):
@@ -23,6 +24,7 @@ def end_message(user_data):
 
 
 def confirm_delivery_message(user_data):
+    tz = pytz.timezone("Asia/Tashkent")
     return f"""\
 Тип транспорта - {user_data["transport_type"]}
 Номер транспорта - {user_data["transport_number"]}
@@ -30,7 +32,7 @@ def confirm_delivery_message(user_data):
 Вес груза - {user_data["weight"]} кг
 Адрес отправки - {user_data["sender_address"]}
 Адрес доставки - {user_data["receiver_address"]}
-Дата и время отправки - {timezone.now().strftime("%d.%m.%Y %H:%M:%S")}"""
+Дата и время отправки - {timezone.now().astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}"""
 
 
 def user_str(user):
