@@ -183,7 +183,7 @@ def end(client, query, user_data):
         for user_id in admins:
             client.send_media_group(user_id, media)
 
-        update_truck(delivery, "Отправлен")
+        update_truck(delivery, "Занят")
         query.edit_message_text("Поставка оформлена")
     else:
         photo_count = int(redis.get(f"photo_count:{query.from_user.id}"))
