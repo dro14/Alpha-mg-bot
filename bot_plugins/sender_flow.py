@@ -172,7 +172,8 @@ def end(client, query, user_data):
         reply_markup = InlineKeyboardMarkup([[button]])
 
         address = Address.objects.get(address=user_data["receiver_address"])
-        receivers = address.receiving_users.values_list("user_id", flat=True)
+        receivers = address.receiving_users.exclude(user_id=None)
+        receivers = receivers.values_list("user_id", flat=True)
         for user_id in receivers:
             set_dict(f"user:{user_id}", {"current": "confirm_delivery"})
             client.send_media_group(user_id, media)
