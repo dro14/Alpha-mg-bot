@@ -39,8 +39,9 @@ def confirm_delivery_message(user_data):
 
 
 def complete_delivery_message(delivery):
-    if not delivery.comment:
-        delivery.comment = "отсутствует"
+    comment = ""
+    if delivery.comment:
+        comment = f"\nКомментарий - {delivery.comment}"
     tz = pytz.timezone("Asia/Tashkent")
     return f"""\
 Груз доставлен    
@@ -52,8 +53,7 @@ def complete_delivery_message(delivery):
 Адрес отправки - {delivery.sender_address}
 Адрес доставки - {delivery.receiver_address}
 Дата и время отправки - {delivery.sent_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
-Дата и время доставки - {delivery.received_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
-Комментарий - {delivery.comment}"""
+Дата и время доставки - {delivery.received_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}{comment}"""
 
 
 def user_str(user):
