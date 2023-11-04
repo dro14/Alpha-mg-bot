@@ -9,7 +9,7 @@ def confirm_delivery(_, query, user_data):
     set_dict(f"receiver:{query.from_user.id}", user_data)
 
     button_text = "Завершить поставку"
-    button = InlineKeyboardButton(button_text, callback_data=button_text)
+    button = InlineKeyboardButton(button_text, callback_data=query.data)
     reply_markup = InlineKeyboardMarkup([[button]])
 
     query.edit_message_text(complete_delivery_text, reply_markup=reply_markup)
