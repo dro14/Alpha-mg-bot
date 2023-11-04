@@ -90,6 +90,16 @@ async def is_receiver(_, __, update):
     return await ais_in(update.from_user, receivers)
 
 
+async def admin_receiver(_, __, update):
+    if await is_admin(_, __, update):
+        return True
+    if await is_receiver(_, __, update):
+        return True
+
+    await update.reply("Вы не являетесь администратором или получателем")
+    return False
+
+
 registered = filters.create(is_registered)
 admin_verbose = filters.create(is_admin_verbose)
 sender_verbose = filters.create(is_sender_verbose)
@@ -97,3 +107,4 @@ receiver_verbose = filters.create(is_receiver_verbose)
 admin = filters.create(is_admin)
 sender = filters.create(is_sender)
 receiver = filters.create(is_receiver)
+admin_receiver = filters.create(admin_receiver)

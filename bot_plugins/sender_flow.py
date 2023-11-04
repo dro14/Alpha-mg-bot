@@ -56,7 +56,7 @@ def weight(_, message, user_data):
     user_data["current"] = "photo_1"
     set_dict(f"sender:{message.from_user.id}", user_data)
 
-    text = "Загрузите первое фото груза:\n\n(Чтобы загрузить, нажмите кнопку ниже в виде скрепки)"
+    text = "Загрузите первое фото (1 шт):\n\n(Чтобы загрузить, нажмите кнопку ниже 👇 в виде скрепки 📎)"
     message.reply(text)
 
 
@@ -77,10 +77,10 @@ def photo_1_2(client, message, user_data):
     reply_markup = InlineKeyboardMarkup([[button]])
 
     if current.endswith("1"):
-        text = "Загрузите второе фото:"
+        text = "Загрузите второе фото (1 шт):"
         user_data["photo_count"] = 1
     else:
-        text = "Загрузите третье фото:"
+        text = "Загрузите третье фото (1 шт):"
         user_data["photo_count"] = 2
     set_dict(f"sender:{message.from_user.id}", user_data)
     message.reply(text, reply_markup=reply_markup)

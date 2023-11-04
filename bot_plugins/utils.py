@@ -17,7 +17,7 @@ def user_str(user):
     return user.username if user.username else user.phone_number
 
 
-def make_album(caption, photos=None, user_id=None):
+def make_album(caption, photos=None, user_id=None, delivery=None):
     media = []
     if photos:
         for photo in photos.values():
@@ -29,7 +29,7 @@ def make_album(caption, photos=None, user_id=None):
             )
             caption = ""
         return media
-    else:
+    elif user_id:
         photo_count = get_dict(f"sender:{user_id}")["photo_count"]
         for i in range(1, photo_count + 1):
             key = f"photo_{i}:{user_id}"
@@ -40,6 +40,18 @@ def make_album(caption, photos=None, user_id=None):
                 )
             )
             caption = ""
+        return media
+    elif delivery:
+        for i in range(1, 4):
+            photo = getattr(delivery, f"photo_{i}")
+            if photo:
+                media.append(
+                    InputMediaPhoto(
+                        media=BytesIO(photo),
+                        caption=caption,
+                    )
+                )
+                caption = ""
         return media
 
 

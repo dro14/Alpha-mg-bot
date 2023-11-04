@@ -1,4 +1,4 @@
-from .filters import registered, sender_verbose, admin_verbose
+from .filters import registered, sender_verbose, admin_verbose, admin_receiver
 from pyrogram import Client, filters
 from .redis_client import set_dict
 from alpha.models import Cargo
@@ -28,6 +28,28 @@ def admin(_, message):
     reply_markup = InlineKeyboardMarkup([[button]])
 
     message.reply(admin_text, reply_markup=reply_markup)
+
+
+@Client.on_message(filters.command("coming") & registered & admin_receiver)
+def coming(_, message):
+    coming_deliveries = Delivery.objects.filter(status="Отправлен")
+    if coming_deliveries:
+        user, is_admin = get_user(message.from_user)
+        if is_admin:
+            text = "Поставки в пути:"
+        else:
+            text = "Поставки в пути к вашему адресу:"
+            coming_deliveries = coming_deliveries.filter(
+                receiver_address=user.receiver_address
+            )
+
+        message.reply(text)
+        for delivery in coming_deliveries:
+            caption = coming_delivery_message(delivery)
+            media = make_album(caption, delivery=delivery)
+            message.reply_media_group(media)
+    else:
+        message.reply("Нет поставок в пути")
 
 
 @Client.on_message(filters.command("send") & registered & sender_verbose)
