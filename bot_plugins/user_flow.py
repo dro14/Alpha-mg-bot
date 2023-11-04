@@ -7,24 +7,27 @@ from .sender_flow import *
 
 @Client.on_callback_query(registered & (sender | receiver))
 def handle_callback_query(client, query):
-    user_data = get_dict(f"user:{query.from_user.id}")
+    user_data = get_dict(f"user:{query.from_user.id}:{query.data}")
     match user_data["current"]:
-        case "cargo_type":
-            cargo_type(client, query, user_data)
-        case "transport_type":
-            transport_type(client, query, user_data)
-        case "transport_number":
-            transport_number1(client, query, user_data)
-        case "photo_2" | "photo_3":
-            photo_2_3(client, query, user_data)
-        case "receiver_address":
-            receiver_address(client, query, user_data)
-        case "end":
-            end(client, query, user_data)
         case "confirm_delivery":
             confirm_delivery(client, query, user_data)
-        case "complete_delivery":
-            complete_delivery(client, query, user_data)
+        case "not_found":
+            user_data = get_dict(f"user:{query.from_user.id}")
+            match user_data["current"]:
+                case "cargo_type":
+                    cargo_type(client, query, user_data)
+                case "transport_type":
+                    transport_type(client, query, user_data)
+                case "transport_number":
+                    transport_number1(client, query, user_data)
+                case "photo_2" | "photo_3":
+                    photo_2_3(client, query, user_data)
+                case "receiver_address":
+                    receiver_address(client, query, user_data)
+                case "end":
+                    end(client, query, user_data)
+                case "complete_delivery":
+                    complete_delivery(client, query, user_data)
 
 
 @Client.on_message(filters.regex(r"^\d+$") & registered & (sender | receiver))

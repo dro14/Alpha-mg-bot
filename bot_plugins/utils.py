@@ -76,6 +76,7 @@ def update_truck(delivery, status):
 def get_delivery(user, user_data):
     delivery_id = int(user_data["delivery_id"])
     redis.delete(f"user:{user.id}")
+    redis.delete(f"user:{user.id}:{delivery_id}")
     delivery = Delivery.objects.get(id=delivery_id)
     delivery.status = "Доставлен"
     delivery.received_at = timezone.now()

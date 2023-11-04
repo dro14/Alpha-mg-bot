@@ -64,7 +64,6 @@ def photo_1_2(client, message, user_data):
     current = user_data["current"]
     user_data[current] = message.photo.file_id
     user_data["current"] = f"photo_{int(current[-1:]) + 1}"
-    set_dict(f"user:{message.from_user.id}", user_data)
 
     binary_data = client.download_media(
         message.photo.file_id,
@@ -79,10 +78,11 @@ def photo_1_2(client, message, user_data):
 
     if current.endswith("1"):
         text = "Загрузите второе фото:"
-        redis.set(f"photo_count:{message.from_user.id}", 1)
+        user_data["photo_count"] = 1
     else:
         text = "Загрузите третье фото:"
-        redis.set(f"photo_count:{message.from_user.id}", 2)
+        user_data["photo_count"] = 2
+    set_dict(f"user:{message.from_user.id}", user_data)
     message.reply(text, reply_markup=reply_markup)
 
 
@@ -107,7 +107,6 @@ def photo_3(client, message, user_data):
     user_data["sender_address"] = sender_address
     user_data["photo_3"] = message.photo.file_id
     user_data["current"] = "receiver_address"
-    set_dict(f"user:{message.from_user.id}", user_data)
 
     binary_data = client.download_media(
         message.photo.file_id,
@@ -121,7 +120,8 @@ def photo_3(client, message, user_data):
     reply_markup = make_reply_markup(receiver_addresses)
 
     text = "Выберите адрес доставки:"
-    redis.set(f"photo_count:{message.from_user.id}", 3)
+    user_data["photo_count"] = 3
+    set_dict(f"user:{message.from_user.id}", user_data)
     message.reply(text, reply_markup=reply_markup)
 
 
@@ -143,7 +143,7 @@ def receiver_address(_, query, user_data):
 
 def end(client, query, user_data):
     if query.data == "Утвердить":
-        photo_count = int(redis.get(f"photo_count:{query.from_user.id}"))
+        photo_count = user_data["photo_count"]
         photos = {}
         for i in range(1, photo_count + 1):
             key = f"photo_{i}:{query.from_user.id}"
@@ -175,7 +175,10 @@ def end(client, query, user_data):
         receivers = address.receiving_users.exclude(user_id=None)
         receivers = receivers.values_list("user_id", flat=True)
         for user_id in receivers:
-            set_dict(f"user:{user_id}", {"current": "confirm_delivery"})
+            set_dict(
+                f"user:{user_id}:{delivery.id}",
+                {"current": "confirm_delivery"},
+            )
             client.send_media_group(user_id, media)
             client.send_message(user_id, text, reply_markup=reply_markup)
 
@@ -187,10 +190,9 @@ def end(client, query, user_data):
         update_truck(delivery, "Занят")
         query.edit_message_text("Поставка оформлена")
     else:
-        photo_count = int(redis.get(f"photo_count:{query.from_user.id}"))
+        photo_count = user_data["photo_count"]
         for i in range(1, photo_count + 1):
             redis.delete(f"photo_{i}:{query.from_user.id}")
         query.edit_message_text("Поставка отменена")
 
-    redis.delete(f"photo_count:{query.from_user.id}")
     redis.delete(f"user:{query.from_user.id}")
