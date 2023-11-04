@@ -33,7 +33,7 @@ def admin(_, message):
 @Client.on_message(filters.command("send") & registered & sender_verbose)
 def send(_, message):
     user_data = {"current": "cargo_type"}
-    set_dict(f"user:{message.from_user.id}", user_data)
+    set_dict(f"sender:{message.from_user.id}", user_data)
 
     cargo_types = Cargo.objects.values_list("cargo_type", flat=True)
     reply_markup = make_reply_markup(cargo_types)

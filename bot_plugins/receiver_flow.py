@@ -6,7 +6,7 @@ from .texts import *
 def confirm_delivery(_, query, user_data):
     user_data["current"] = "complete_delivery"
     user_data["delivery_id"] = query.data
-    set_dict(f"user:{query.from_user.id}", user_data)
+    set_dict(f"receiver:{query.from_user.id}", user_data)
 
     button_text = "Завершить поставку"
     button = InlineKeyboardButton(button_text, callback_data=button_text)

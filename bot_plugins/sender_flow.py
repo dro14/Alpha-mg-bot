@@ -7,7 +7,7 @@ from .texts import *
 def cargo_type(_, query, user_data):
     user_data["cargo_type"] = query.data
     user_data["current"] = "transport_type"
-    set_dict(f"user:{query.from_user.id}", user_data)
+    set_dict(f"sender:{query.from_user.id}", user_data)
 
     transport_types = ["Самосвал", "Вагон"]
     reply_markup = make_reply_markup(transport_types)
@@ -19,7 +19,7 @@ def cargo_type(_, query, user_data):
 def transport_type(_, query, user_data):
     user_data["transport_type"] = query.data
     user_data["current"] = "transport_number"
-    set_dict(f"user:{query.from_user.id}", user_data)
+    set_dict(f"sender:{query.from_user.id}", user_data)
 
     if query.data == "Самосвал":
         truck_numbers = Truck.objects.filter(status="Свободен")
@@ -36,7 +36,7 @@ def transport_type(_, query, user_data):
 def transport_number1(_, query, user_data):
     user_data["transport_number"] = query.data
     user_data["current"] = "weight"
-    set_dict(f"user:{query.from_user.id}", user_data)
+    set_dict(f"sender:{query.from_user.id}", user_data)
 
     text = "Введите вес груза (только цифры в кг):"
     query.edit_message_text(text)
@@ -45,7 +45,7 @@ def transport_number1(_, query, user_data):
 def transport_number2(_, message, user_data):
     user_data["transport_number"] = message.text
     user_data["current"] = "weight"
-    set_dict(f"user:{message.from_user.id}", user_data)
+    set_dict(f"sender:{message.from_user.id}", user_data)
 
     text = "Введите вес груза (только цифры в кг):"
     message.reply(text)
@@ -54,7 +54,7 @@ def transport_number2(_, message, user_data):
 def weight(_, message, user_data):
     user_data["weight"] = message.text
     user_data["current"] = "photo_1"
-    set_dict(f"user:{message.from_user.id}", user_data)
+    set_dict(f"sender:{message.from_user.id}", user_data)
 
     text = "Загрузите первое фото груза:\n\n(Чтобы загрузить, нажмите кнопку ниже в виде скрепки)"
     message.reply(text)
@@ -82,7 +82,7 @@ def photo_1_2(client, message, user_data):
     else:
         text = "Загрузите третье фото:"
         user_data["photo_count"] = 2
-    set_dict(f"user:{message.from_user.id}", user_data)
+    set_dict(f"sender:{message.from_user.id}", user_data)
     message.reply(text, reply_markup=reply_markup)
 
 
@@ -91,7 +91,7 @@ def photo_2_3(_, query, user_data):
     sender_address = user.sender_address.address
     user_data["sender_address"] = sender_address
     user_data["current"] = "receiver_address"
-    set_dict(f"user:{query.from_user.id}", user_data)
+    set_dict(f"sender:{query.from_user.id}", user_data)
 
     receiver_addresses = Address.objects.exclude(address=sender_address)
     receiver_addresses = receiver_addresses.values_list("address", flat=True)
@@ -121,14 +121,14 @@ def photo_3(client, message, user_data):
 
     text = "Выберите адрес доставки:"
     user_data["photo_count"] = 3
-    set_dict(f"user:{message.from_user.id}", user_data)
+    set_dict(f"sender:{message.from_user.id}", user_data)
     message.reply(text, reply_markup=reply_markup)
 
 
 def receiver_address(_, query, user_data):
     user_data["receiver_address"] = query.data
     user_data["current"] = "end"
-    set_dict(f"user:{query.from_user.id}", user_data)
+    set_dict(f"sender:{query.from_user.id}", user_data)
 
     options = ["Утвердить", "Сбросить"]
     reply_markup = make_reply_markup(options)
@@ -176,7 +176,7 @@ def end(client, query, user_data):
         receivers = receivers.values_list("user_id", flat=True)
         for user_id in receivers:
             set_dict(
-                f"user:{user_id}:{delivery.id}",
+                f"receiver:{user_id}:{delivery.id}",
                 {"current": "confirm_delivery"},
             )
             client.send_media_group(user_id, media)
