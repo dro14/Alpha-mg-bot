@@ -1,3 +1,4 @@
+from pyrogram.errors.exceptions.bad_request_400 import UserBlocked
 from .redis_client import set_dict
 from .utils import *
 from .texts import *
@@ -24,7 +25,10 @@ def complete_delivery(client, query, user_data):
     users.append(get_user_id(delivery.sender))
     text = finish_delivery_message(delivery)
     for user_id in users:
-        client.send_message(user_id, text)
+        try:
+            client.send_message(user_id, text)
+        except UserBlocked:
+            pass
 
     update_truck(delivery, "Свободен")
     query.edit_message_text("Поставка завершена")
@@ -45,10 +49,13 @@ def receive_comment(client, message, user_data, with_photo):
     users.append(get_user_id(delivery.sender))
     text = finish_delivery_message(delivery)
     for user_id in users:
-        if with_photo:
-            client.send_photo(user_id, bytes_io, caption=text)
-        else:
-            client.send_message(user_id, text)
+        try:
+            if with_photo:
+                client.send_photo(user_id, bytes_io, caption=text)
+            else:
+                client.send_message(user_id, text)
+        except UserBlocked:
+            pass
 
     update_truck(delivery, "Свободен")
     message.reply("Поставка завершена")

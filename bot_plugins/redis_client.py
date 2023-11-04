@@ -1,5 +1,5 @@
 from redis import Redis
-import json
+import pickle
 import os
 
 redis = Redis(
@@ -10,14 +10,13 @@ redis = Redis(
 
 
 def set_dict(key, value):
-    value = json.dumps(value)
+    value = pickle.dumps(value)
     redis.set(key, value)
 
 
 def get_dict(key):
     value = redis.get(key)
     if value:
-        value = value.decode("utf-8")
-        return json.loads(value)
+        return pickle.loads(value)
     else:
         return {"current": "not_found"}
