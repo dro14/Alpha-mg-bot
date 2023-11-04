@@ -3,7 +3,7 @@ async-timeout==4.0.3
 defusedxml==0.7.1
 diff-match-patch==20230430
 dj-database-url==2.1.0
-Django==4.2.6
+Django==4.2.7
 django-import-export==3.3.1
 django-rangefilter==0.9.1
 et-xmlfile==1.1.0
