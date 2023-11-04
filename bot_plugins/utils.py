@@ -1,7 +1,7 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
 from alpha.models import User, CustomUser, Truck, Delivery
+from .redis_client import redis, get_dict
 from django.utils import timezone
-from .redis_client import redis
 from io import BytesIO
 
 
@@ -30,7 +30,7 @@ def make_album(caption, photos=None, user_id=None):
             caption = ""
         return media
     else:
-        photo_count = int(redis.get(f"photo_count:{user_id}"))
+        photo_count = get_dict(f"user:{user_id}")["photo_count"]
         for i in range(1, photo_count + 1):
             key = f"photo_{i}:{user_id}"
             media.append(
