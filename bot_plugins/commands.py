@@ -65,8 +65,5 @@ def send(_, message):
 
 @Client.on_message(filters.command("cancel") & registered & sender_verbose)
 def cancel(_, message):
-    redis.delete(f"user:{message.from_user.id}")
-    redis.delete(f"photo_count:{message.from_user.id}")
-    for i in range(1, 5):
-        redis.delete(f"photo_{i}:{message.from_user.id}")
+    redis.delete(f"sender:{message.from_user.id}")
     message.reply(cancel_text)

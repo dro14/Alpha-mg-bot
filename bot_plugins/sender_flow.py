@@ -1,3 +1,4 @@
+from pyrogram.errors.exceptions.bad_request_400 import UserBlocked
 from .redis_client import set_dict
 from alpha.models import Address
 from .utils import *
@@ -62,19 +63,12 @@ def weight(_, message, user_data):
 
 def photo_1_2(client, message, user_data):
     current = user_data["current"]
-    user_data[current] = message.photo.file_id
     user_data["current"] = f"photo_{int(current[-1:]) + 1}"
 
-    binary_data = client.download_media(
+    user_data[current] = client.download_media(
         message.photo.file_id,
         in_memory=True,
     ).getvalue()
-    key = f"{current}:{message.from_user.id}"
-    redis.set(key, binary_data)
-
-    enough = "Достаточно"
-    button = InlineKeyboardButton(enough, callback_data=enough)
-    reply_markup = InlineKeyboardMarkup([[button]])
 
     if current.endswith("1"):
         text = "Загрузите второе фото (1 шт):"
@@ -83,6 +77,11 @@ def photo_1_2(client, message, user_data):
         text = "Загрузите третье фото (1 шт):"
         user_data["photo_count"] = 2
     set_dict(f"sender:{message.from_user.id}", user_data)
+
+    enough = "Достаточно"
+    button = InlineKeyboardButton(enough, callback_data=enough)
+    reply_markup = InlineKeyboardMarkup([[button]])
+
     message.reply(text, reply_markup=reply_markup)
 
 
@@ -90,6 +89,7 @@ def photo_2_3(_, query, user_data):
     user = CustomUser.objects.get(user_id=query.from_user.id)
     sender_address = user.sender_address.address
     user_data["sender_address"] = sender_address
+    user_data["sender"] = user_str(query.from_user)
     user_data["current"] = "receiver_address"
     set_dict(f"sender:{query.from_user.id}", user_data)
 
@@ -105,23 +105,21 @@ def photo_3(client, message, user_data):
     user = CustomUser.objects.get(user_id=message.from_user.id)
     sender_address = user.sender_address.address
     user_data["sender_address"] = sender_address
-    user_data["photo_3"] = message.photo.file_id
+    user_data["sender"] = user_str(message.from_user)
     user_data["current"] = "receiver_address"
 
-    binary_data = client.download_media(
+    user_data["photo_3"] = client.download_media(
         message.photo.file_id,
         in_memory=True,
     ).getvalue()
-    key = f"photo_3:{message.from_user.id}"
-    redis.set(key, binary_data)
+    user_data["photo_count"] = 3
+    set_dict(f"sender:{message.from_user.id}", user_data)
 
     receiver_addresses = Address.objects.exclude(address=sender_address)
     receiver_addresses = receiver_addresses.values_list("address", flat=True)
     reply_markup = make_reply_markup(receiver_addresses)
 
     text = "Выберите адрес доставки:"
-    user_data["photo_count"] = 3
-    set_dict(f"sender:{message.from_user.id}", user_data)
     message.reply(text, reply_markup=reply_markup)
 
 
@@ -134,7 +132,7 @@ def receiver_address(_, query, user_data):
     reply_markup = make_reply_markup(options)
 
     caption = end_message(user_data)
-    media = make_album(caption, user_id=query.from_user.id)
+    media = make_album(caption, user_data=user_data)
 
     query.message.reply_media_group(media)
     query.message.reply("Подтверждаете введённые данные?", reply_markup=reply_markup)
@@ -143,27 +141,13 @@ def receiver_address(_, query, user_data):
 
 def end(client, query, user_data):
     if query.data == "Утвердить":
-        photo_count = user_data["photo_count"]
-        photos = {}
-        for i in range(1, photo_count + 1):
-            key = f"photo_{i}:{query.from_user.id}"
-            photos[f"photo_{i}"] = redis.get(key)
-            redis.delete(key)
-
-        delivery = Delivery.objects.create(
-            status="Отправлен",
-            transport_type=user_data["transport_type"],
-            transport_number=user_data["transport_number"],
-            cargo_type=user_data["cargo_type"],
-            weight=user_data["weight"],
-            sender_address=user_data["sender_address"],
-            receiver_address=user_data["receiver_address"],
-            sender=user_str(query.from_user),
-            **photos,
-        )
-
         caption = confirm_delivery_message(user_data)
-        media = make_album(caption, photos=photos)
+        media = make_album(caption, user_data=user_data)
+
+        user_data.pop("current")
+        user_data.pop("photo_count")
+        user_data["status"] = "Отправлен"
+        delivery = Delivery.objects.create(**user_data)
 
         text = "При получении груза, нажмите кнопку ниже"
 
@@ -179,20 +163,23 @@ def end(client, query, user_data):
                 f"receiver:{user_id}:{delivery.id}",
                 {"current": "confirm_delivery"},
             )
-            client.send_media_group(user_id, media)
-            client.send_message(user_id, text, reply_markup=reply_markup)
+            try:
+                client.send_media_group(user_id, media)
+                client.send_message(user_id, text, reply_markup=reply_markup)
+            except UserBlocked:
+                pass
 
         admins = User.objects.exclude(user_id=None)
         admins = admins.values_list("user_id", flat=True)
         for user_id in admins:
-            client.send_media_group(user_id, media)
+            try:
+                client.send_media_group(user_id, media)
+            except UserBlocked:
+                pass
 
         update_truck(delivery, "Занят")
         query.edit_message_text("Поставка оформлена")
     else:
-        photo_count = user_data["photo_count"]
-        for i in range(1, photo_count + 1):
-            redis.delete(f"photo_{i}:{query.from_user.id}")
         query.edit_message_text("Поставка отменена")
 
-    redis.delete(f"user:{query.from_user.id}")
+    redis.delete(f"sender:{query.from_user.id}")

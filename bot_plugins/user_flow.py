@@ -1,5 +1,6 @@
 from .filters import registered, sender, receiver
 from pyrogram import Client, filters
+from .redis_client import get_dict
 from .receiver_flow import *
 from .sender_flow import *
 
@@ -7,13 +8,13 @@ from .sender_flow import *
 @Client.on_callback_query(registered & (sender | receiver))
 def handle_callback_query(client, query):
     if query.data.isdigit():
-        user_data = get_dict(f"receiver:{query.from_user.id}:{query.data}")
-        if user_data["current"] == "confirm_delivery":
-            confirm_delivery(client, query, user_data)
+        user_data = get_dict(f"receiver:{query.from_user.id}")
+        if user_data["current"] == "complete_delivery":
+            complete_delivery(client, query, user_data)
         else:
-            user_data = get_dict(f"receiver:{query.from_user.id}")
-            if user_data["current"] == "complete_delivery":
-                complete_delivery(client, query, user_data)
+            user_data = get_dict(f"receiver:{query.from_user.id}:{query.data}")
+            if user_data["current"] == "confirm_delivery":
+                confirm_delivery(client, query, user_data)
     else:
         user_data = get_dict(f"sender:{query.from_user.id}")
         match user_data["current"]:
@@ -51,14 +52,12 @@ def handle_photos(client, message):
             photo_3(client, message, user_data)
         case "not_found":
             user_data = get_dict(f"receiver:{message.from_user.id}")
-            match user_data["current"]:
-                case "complete_delivery":
-                    receive_comment(client, message, user_data, True)
+            if user_data["current"] == "complete_delivery":
+                receive_comment(client, message, user_data, True)
 
 
 @Client.on_message(registered & (sender | receiver))
 def handle_text(client, message):
     user_data = get_dict(f"receiver:{message.from_user.id}")
-    match user_data["current"]:
-        case "complete_delivery":
-            receive_comment(client, message, user_data, False)
+    if user_data["current"] == "complete_delivery":
+        receive_comment(client, message, user_data, False)

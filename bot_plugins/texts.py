@@ -9,13 +9,14 @@ def end_message(user_data):
 Тип груза - {user_data["cargo_type"]}
 Вес груза - {user_data["weight"]} кг
 Адрес отправки - {user_data["sender_address"]}
-Адрес доставки - {user_data["receiver_address"]}"""
+Адрес доставки - {user_data["receiver_address"]}
+Отправитель - {user_data["sender"]}"""
 
 
 def confirm_delivery_message(user_data):
     tz = pytz.timezone("Asia/Tashkent")
     return f"""\
-Груз отправлен    
+Груз отправлен
 
 Тип транспорта - {user_data["transport_type"]}
 Номер транспорта - {user_data["transport_number"]}
@@ -23,6 +24,7 @@ def confirm_delivery_message(user_data):
 Вес груза - {user_data["weight"]} кг
 Адрес отправки - {user_data["sender_address"]}
 Адрес доставки - {user_data["receiver_address"]}
+Отправитель - {user_data["sender"]}
 Дата и время отправки - {timezone.now().astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}"""
 
 
@@ -51,6 +53,8 @@ def finish_delivery_message(delivery):
 Вес груза - {delivery.weight} кг
 Адрес отправки - {delivery.sender_address}
 Адрес доставки - {delivery.receiver_address}
+Отправитель - {delivery.sender}
+Получатель - {delivery.receiver}
 Дата и время отправки - {delivery.sent_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
 Дата и время доставки - {delivery.received_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}{comment}"""
 
@@ -87,14 +91,14 @@ def coming_delivery_message(delivery):
     tz = pytz.timezone("Asia/Tashkent")
     return f"""\
 Статус - {delivery.status}
-Дата и время отправки - {delivery.sent_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}
 Тип транспорта - {delivery.transport_type}
 Номер транспорта - {delivery.transport_number}
 Тип груза - {delivery.cargo_type}
 Вес груза - {delivery.weight} кг
 Адрес отправки - {delivery.sender_address}
 Адрес доставки - {delivery.receiver_address}
-Отправитель - {delivery.sender}"""
+Отправитель - {delivery.sender}
+Дата и время отправки - {delivery.sent_at.astimezone(tz).strftime("%d.%m.%Y %H:%M:%S")}"""
 
 
 admin_text = "В админ панели вы можете просмотреть и управлять данными"

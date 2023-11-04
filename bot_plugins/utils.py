@@ -1,7 +1,7 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto
 from alpha.models import User, CustomUser, Truck, Delivery
-from .redis_client import redis, get_dict
 from django.utils import timezone
+from .redis_client import redis
 from io import BytesIO
 
 
@@ -17,25 +17,14 @@ def user_str(user):
     return user.username if user.username else user.phone_number
 
 
-def make_album(caption, photos=None, user_id=None, delivery=None):
+def make_album(caption, user_data=None, delivery=None):
     media = []
-    if photos:
-        for photo in photos.values():
-            media.append(
-                InputMediaPhoto(
-                    media=BytesIO(photo),
-                    caption=caption,
-                )
-            )
-            caption = ""
-        return media
-    elif user_id:
-        photo_count = get_dict(f"sender:{user_id}")["photo_count"]
+    if user_data:
+        photo_count = user_data["photo_count"]
         for i in range(1, photo_count + 1):
-            key = f"photo_{i}:{user_id}"
             media.append(
                 InputMediaPhoto(
-                    media=BytesIO(redis.get(key)),
+                    media=BytesIO(user_data[f"photo_{i}"]),
                     caption=caption,
                 )
             )
@@ -87,8 +76,8 @@ def update_truck(delivery, status):
 
 def get_delivery(user, user_data):
     delivery_id = int(user_data["delivery_id"])
-    redis.delete(f"user:{user.id}")
-    redis.delete(f"user:{user.id}:{delivery_id}")
+    redis.delete(f"receiver:{user.id}")
+    redis.delete(f"receiver:{user.id}:{delivery_id}")
     delivery = Delivery.objects.get(id=delivery_id)
     delivery.status = "Доставлен"
     delivery.received_at = timezone.now()
