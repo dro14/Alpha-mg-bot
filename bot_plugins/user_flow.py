@@ -56,7 +56,7 @@ def handle_photos(client, message):
                 receive_comment(client, message, user_data, True)
 
 
-@Client.on_message(registered & (sender | receiver))
+@Client.on_message(sender | receiver)
 def handle_text(client, message):
     user_data = get_dict(f"receiver:{message.from_user.id}")
     if user_data["current"] == "complete_delivery":
